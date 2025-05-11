@@ -5,7 +5,7 @@ pkgs.mkShell {
   buildInputs = [
     pkgs.verilator # Verilog simulator
     pkgs.iverilog # Verilog simulator
-    pkgs.tput # GTKWave waveform viewer
+    # pkgs.tput # GTKWave waveform viewer
   ];
 
   # Shell hook to set up environment

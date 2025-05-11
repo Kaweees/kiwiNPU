@@ -14,8 +14,8 @@
 
 </div>
 
-<a href="https://kaweees.github.io/kiwiNPU">
-  <img alt="Zig Logo" src="assets/img/zig-mark.svg" align="right" width="150">
+<a href="https://github.com/Kaweees/kiwiNPU">
+  <img alt="SystemVerilog Logo" src="assets/img/systemverilog.png" align="right" width="150">
 </a>
 
 <div align="left">
@@ -28,7 +28,7 @@ A minimal Real-Time Operating System (RTOS) designed for embedded applications w
 
 ### Built With
 
-[![Zig][Zig-shield]][Zig-url]
+[![SystemVerilog][SystemVerilog-shield]][SystemVerilog-url]
 [![NixOS][NixOS-shield]][NixOS-url]
 [![GitHub Actions][github-actions-shield]][github-actions-url]
 
@@ -111,9 +111,9 @@ The source code for this project is distributed under the terms of the GNU Gener
 <!-- MARKDOWN SHIELD BAGDES & LINKS -->
 <!-- https://github.com/Ileriayo/markdown-badges -->
 
-[Zig-shield]: https://img.shields.io/badge/Zig-%f7a41d.svg?style=for-the-badge&logo=zig&logoColor=f7a41d&labelColor=222222&color=f7a41d
+[SystemVerilog-shield]: https://img.shields.io/badge/SystemVerilog-%f7a41d.svg?style=for-the-badge&logo=SystemVerilog&logoColor=f7a41d&labelColor=222222&color=f7a41d
+[SystemVerilog-url]: https://www.systemverilog.org/
 [NixOS-shield]: https://img.shields.io/badge/NIX-%23008080.svg?style=for-the-badge&logo=NixOS&logoColor=5277C3&labelColor=222222&color=5277C3
 [NixOS-url]: https://nixos.org/
-[Zig-url]: https://ziglang.org/
 [github-actions-shield]: https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=2671E5&labelColor=222222&color=2671E5
 [github-actions-url]: https://github.com/features/actions
