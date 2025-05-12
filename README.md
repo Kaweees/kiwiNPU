@@ -24,11 +24,12 @@
 
 <!-- ABOUT THE PROJECT -->
 
-A minimal Real-Time Operating System (RTOS) designed for embedded applications with targets for x86_64, RISC-V (RV32I, RV64I) and ARM written in Zig.
+A Neural Processing Unit (NPU) accelerator ASIC designed for deep learning inference written in SystemVerilog.
 
 ### Built With
 
 [![SystemVerilog][SystemVerilog-shield]][SystemVerilog-url]
+[![GNU Make][GNU-Make-shield]][GNU-Make-url]
 [![NixOS][NixOS-shield]][NixOS-url]
 [![GitHub Actions][github-actions-shield]][github-actions-url]
 
@@ -48,7 +49,7 @@ A minimal Real-Time Operating System (RTOS) designed for embedded applications w
 
 ### Prerequisites
 
-Before attempting to build this project, make sure you have [Zig](https://ziglang.org/learn/getting-started/) and [Nix](https://nixos.org/download.html) installed on your machine.
+Before attempting to build this project, make sure you have [Verilator](https://www.veripool.org/verilator/) and [Nix](https://nixos.org/download.html) installed on your machine.
 
 ### Installation
 
@@ -70,7 +71,7 @@ To get a local copy of the project up and running on your machine, follow these 
 3. Run the project
 
    ```sh
-   just run <architecture>
+   make
    ```
 
 <!-- PROJECT FILE STRUCTURE -->
@@ -113,6 +114,8 @@ The source code for this project is distributed under the terms of the GNU Gener
 
 [SystemVerilog-shield]: https://img.shields.io/badge/SystemVerilog-%f7a41d.svg?style=for-the-badge&logo=SystemVerilog&logoColor=f7a41d&labelColor=222222&color=f7a41d
 [SystemVerilog-url]: https://www.systemverilog.org/
+[GNU-Make-shield]: https://img.shields.io/badge/GNU%20Make-%23008080.svg?style=for-the-badge&logo=gnu&logoColor=A42E2B&labelColor=222222&color=A42E2B
+[GNU-Make-url]: https://www.gnu.org/software/make/
 [NixOS-shield]: https://img.shields.io/badge/NIX-%23008080.svg?style=for-the-badge&logo=NixOS&logoColor=5277C3&labelColor=222222&color=5277C3
 [NixOS-url]: https://nixos.org/
 [github-actions-shield]: https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=2671E5&labelColor=222222&color=2671E5
