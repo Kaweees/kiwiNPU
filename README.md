@@ -65,7 +65,7 @@ To get a local copy of the project up and running on your machine, follow these 
 2. Install the project dependencies
 
    ```sh
-   nix-shell
+   nix develop
    ```
 
 3. Run the project
@@ -116,7 +116,7 @@ The source code for this project is distributed under the terms of the GNU Gener
 [SystemVerilog-url]: https://www.systemverilog.org/
 [GNU-Make-shield]: https://img.shields.io/badge/GNU%20Make-%23008080.svg?style=for-the-badge&logo=gnu&logoColor=A42E2B&labelColor=222222&color=A42E2B
 [GNU-Make-url]: https://www.gnu.org/software/make/
-[NixOS-shield]: https://img.shields.io/badge/NIX-%23008080.svg?style=for-the-badge&logo=NixOS&logoColor=5277C3&labelColor=222222&color=5277C3
+[NixOS-shield]: https://img.shields.io/badge/nix%20flakes-%23008080.svg?style=for-the-badge&logo=NixOS&logoColor=5277C3&labelColor=222222&color=5277C3
 [NixOS-url]: https://nixos.org/
 [github-actions-shield]: https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=2671E5&labelColor=222222&color=2671E5
 [github-actions-url]: https://github.com/features/actions
