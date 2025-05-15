@@ -9,7 +9,9 @@
 
   outputs = { self, nixpkgs, openlane, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system: {
-      devShells.default = let pkgs = import nixpkgs { inherit system; };
+      devShells.default = let
+        pkgs = import nixpkgs { inherit system; };
+        openlanePkgs = [ openlane.packages.${system}.default ];
       in pkgs.mkShell {
         buildInputs = [
           pkgs.gnumake # GNU Make
@@ -20,10 +22,13 @@
           pkgs.gnugrep # grep
           pkgs.coreutils # basic Unix commands
           pkgs.which # which command
-          # From OpenLane flake
-          openlane.packages.${system}.openroad
-          openlane.packages.${system}.openlane
-        ];
+        ] ++ openlanePkgs;
+
+        # Configure OpenLane binary cache
+        NIX_CONFIG = ''
+          extra-substituters = https://openlane.cachix.org
+          extra-trusted-public-keys = openlane.cachix.org-1:5DQ/gq/MbSNCM1ggO4vJ5HdYm2n8iJYKVHjQXHxG/IY=
+        '';
       };
     });
 }
