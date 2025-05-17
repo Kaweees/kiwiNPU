@@ -5,13 +5,22 @@
 # -----------------------------------------------------------------------------
 # The name of the program to build.
 TARGET := kiwiNPU
+TARGET := lab2-Kaweees
 
 ## Simulator Section: change these variables based on your simulator
 # -----------------------------------------------------------------------------
 # The simulator executable.
+ifndef GL
 SIM := verilator
+else
+SIM := iverilog
+endif
 # The simulator flags.
+ifndef GL
 SIM_FLAGS := -binary --timing --trace --trace-structs --assert --timescale 1ns --quiet
+else
+SIM_FLAGS := -g2012 -DFUNCTIONAL -DUSE_POWER_PINS
+endif
 # The linter executable.
 LINT := verilator
 # The linter flags.
@@ -19,6 +28,15 @@ LINT_FLAGS := --lint-only --timing
 
 # The shell executable.
 SHELL := /bin/bash
+
+## PDK Section: change these variables based on your PDK
+# -----------------------------------------------------------------------------
+OPENLANE := `which openlane`
+OPENLANE_CONF ?= config.*
+
+# ## PDK Section: change these variables based on your
+# # -----------------------------------------------------------------------------
+# PDKPATH := $(shell pwd)/pdks
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -31,7 +49,7 @@ TB_DIR := $(TOP_DIR)/tb
 # directory to locate header files
 INC_DIR := $(TOP_DIR)/include
 # directory to locate object files
-OBJ_DIR := $(TOP_DIR)/obj_dir
+OBJ_DIR := $(TB_DIR)/obj_dir
 # directory to place build artifacts
 BUILD_DIR := $(TOP_DIR)/target/$(ARCH)/release/
 
@@ -39,13 +57,21 @@ BUILD_DIR := $(TOP_DIR)/target/$(ARCH)/release/
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 # header files to preprocess
+ifndef GL
 INCS := -I$(call rwildcard,$(INC_DIR)/,*.svh) -I$(call rwildcard,$(RTL_DIR)/,*.vh) -I$(PDKPATH)
+else
+INCS := -I$(realpath gl) -I$(PDKPATH)
+endif
 # source files to compile
 RTL_SRCS := $(call rwildcard,$(RTL_DIR)/,*.sv) $(call rwildcard,$(RTL_DIR)/,*.v)
-# assembly files to compile
+# testbench files to compile
 TB_SRCS := $(call rwildcard,$(TB_DIR)/,*.sv) $(call rwildcard,$(TB_DIR)/,*.v)
 # object files to link
+ifndef GL
 OBJS := $(OBJ_DIR)/V*
+else
+OBJS := $(TB_DIR)/obj_dir/V*
+endif
 
 # $(RTL_SRCS:.sv=.o) $(TB_SRCS:.v=.o)
 
@@ -66,7 +92,7 @@ TEST_RESET := $(shell tput sgr0)
 ## Command Section: change these variables based on your commands
 # -----------------------------------------------------------------------------
 # Targets
-.PHONY: all lint test clean help
+.PHONY: all lint test gl openlane clean help
 
 # Default target: build the program
 all: lint test
@@ -93,6 +119,7 @@ test:
 
 	@# Build With Simulator
 	@cd $(TB_DIR);\
+	cd $(TB_DIR);\
 		$(SIM) $(SIM_FLAGS) $(INCS) $(RTL_SRCS) $(TB_SRCS) > build.log
 
 	@printf "\n$(BOLD) Running... $(RESET)\n"
@@ -108,6 +135,24 @@ test:
 			cat results.log; \
 		fi; \
 
+# GL target: run gate level verification (GL) tests
+gl:
+	@mkdir -p gl
+	@cp runs/recent/final/pnl/* gl/
+	@cat scripts/gatelevel.vh gl/*.v > gl/temp
+	@mv -f gl/temp gl/*.v
+	@rm -f gl/temp
+	@GL=1 make test
+
+# Openlane target: run openlane
+openlane:
+	@`which openlane` --flow Classic $(OPENLANE_CONF)
+	@cd runs && rm -f recent && ln -sf `ls | tail -n 1` recent
+
+# Openroad target: run openroad
+openroad:
+	@scripts/openroad_launch.sh | openroad
+
 # Clean target: remove build artifacts and non-essential files
 clean:
 	@echo "Cleaning $(TARGET)..."
@@ -116,3 +161,4 @@ clean:
 	@rm -f `find $(TB_DIR) -iname "*.log"`
 	@rm -f `find $(TB_DIR) -iname "a.out"`
 	@rm -rf `find $(TB_DIR) -iname "obj_dir"`
+	@rm -rf runs
