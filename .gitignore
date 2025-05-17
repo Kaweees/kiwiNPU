@@ -3,6 +3,4 @@ runs/
 *a.out
 *log
 *obj_dir
-*sim_build
-*results.xml
-.venv
+/gl
