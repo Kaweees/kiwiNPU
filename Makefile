@@ -66,6 +66,8 @@ endif
 RTL_SRCS := $(call rwildcard,$(RTL_DIR)/,*.sv) $(call rwildcard,$(RTL_DIR)/,*.v)
 # testbench files to compile
 TB_SRCS := $(call rwildcard,$(TB_DIR)/,*.sv) $(call rwildcard,$(TB_DIR)/,*.v)
+# Extract just the names of the testbench modules (assuming they start with tb_)
+TB_MODULES := $(notdir $(basename $(filter $(TB_DIR)/tb_%,$(TB_SRCS))))
 # object files to link
 ifndef GL
 OBJS := $(OBJ_DIR)/V*
@@ -104,36 +106,42 @@ lint:
 		top_module=$$(basename $$src .sv); \
 		top_module=$$(basename $$top_module .v); \
 		printf "Linting $$src . . . "; \
-		if $(LINT) $(LINT_FLAGS) --top-module $$top_module $$src > /dev/null 2>&1; then \
+		if $(LINT) $(LINT_FLAGS) -I$(INC_DIR) --top-module $$top_module $$src > /dev/null 2>&1; then \
 			printf "$(GREEN)PASSED$(RESET)\n"; \
 		else \
 			printf "$(RED)FAILED$(RESET)\n"; \
-			$(LINT) $(LINT_FLAGS) --top-module $$top_module $$src; \
+			$(LINT) $(LINT_FLAGS) -I$(INC_DIR) --top-module $$top_module $$src; \
 		fi; \
 	done
 
-# Test target: run the testbench
-test:
+# Main test target: depends on all individual testbench targets
+test: $(TB_MODULES)
+	@printf "\n$(GREEN)$(BOLD) ----- All Tests Completed ----- $(RESET)\n"
+
+# Generate targets for each testbench module
+$(TB_MODULES):
 	@printf "\n$(GREEN)$(BOLD) ----- Running Test: $@ ----- $(RESET)\n"
 	@printf "\n$(BOLD) Building with $(SIM)... $(RESET)\n"
-
-	@# Build With Simulator
-	@cd $(TB_DIR);\
-	cd $(TB_DIR);\
-		$(SIM) $(SIM_FLAGS) $(INCS) $(RTL_SRCS) $(TB_SRCS) > build.log
-
+	@cd $(TB_DIR); \
+		$(SIM) $(SIM_FLAGS) --top-module $@ $(INCS) $(RTL_SRCS) $(TB_DIR)/$@.sv > build_$@.log
 	@printf "\n$(BOLD) Running... $(RESET)\n"
-
 	@# Run Binary and Check for Error in Result
-	@if cd $(TB_DIR);\
-		$(OBJS) > results.log \
-		&& ! ( cat results.log | grep -qi error ) \
+	@if cd $(TB_DIR); \
+		$(OBJS) > results_$@.log \
+		&& ! ( cat results_$@.log | grep -qi error ) \
 		then \
 			printf "$(GREEN)PASSED $@$(RESET)\n"; \
 		else \
 			printf "$(RED)FAILED $@$(RESET)\n"; \
-			cat results.log; \
-		fi; \
+			cat results_$@.log; \
+		fi;
+
+# Print available tests
+list-tests:
+	@printf "\n$(GREEN)$(BOLD) ----- Available Tests ----- $(RESET)\n"
+	@for test in $(TB_MODULES); do \
+		printf "  $$test\n"; \
+	done
 
 # GL target: run gate level verification (GL) tests
 gl:
