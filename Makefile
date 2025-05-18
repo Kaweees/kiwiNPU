@@ -105,7 +105,7 @@ lint:
 		top_module=$$(basename $$src .sv); \
 		top_module=$$(basename $$top_module .v); \
 		printf "Linting $$src . . . "; \
-		if $(LINT) $(LINT_FLAGS) $(INCS) --top-module $$top_module $$src > /dev/null 2>&1; then \
+		if $(LINT) $(LINT_FLAGS) $(INCS) --top-module $$top_module $$src &> /dev/null; then \
 			printf "$(GREEN)PASSED$(RESET)\n"; \
 		else \
 			printf "$(RED)FAILED$(RESET)\n"; \
@@ -113,21 +113,23 @@ lint:
 		fi; \
 	done
 
-# Test target: run the testbench
+# Test target: run the testbenches
 test:
 	@printf "\n$(GREEN)$(BOLD) ----- Running All Testbenches ----- $(RESET)\n";
+	@mkdir -p $(OBJ_DIR)
 	@for tb in $(TB_SRCS); do \
 		top_module=$$(basename $$tb .sv); \
 		top_module=$$(basename $$top_module .v); \
 		printf "Building $$tb . . . "; \
 		cd $(TB_DIR) && \
-			$(SIM) $(SIM_FLAGS) --top-module $$top_module $(INCS) $(RTL_SRCS) $(TB_DIR)/$$top_module.sv > build_$$top_module.log 2>/dev/null; \
+			$(SIM) $(SIM_FLAGS) --top-module $$top_module $(INCS) $(RTL_SRCS) $$tb > $(TB_DIR)/build_$$top_module.log 2>/dev/null; \
 		cd $(TB_DIR) && \
-		$(OBJ_DIR)/V$$top_module > results_$$top_module.log; \
+			$(OBJ_DIR)/V$$top_module > results_$$top_module.log; \
 		if ! ( cat $(TB_DIR)/results_$$top_module.log | grep -qi error ); then \
 			printf "$(GREEN)PASSED $(RESET)\n"; \
 		else \
 			printf "$(RED)FAILED $(RESET)\n"; \
+			cat $(TB_DIR)/results_$$top_module.log; \
 			cat $(TB_DIR)/results_$$top_module.log; \
 		fi; \
 	done

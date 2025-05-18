@@ -81,16 +81,10 @@ To get a local copy of the project up and running on your machine, follow these 
 ```sh
 .kiwiNPU/
 ├── .github/                       - GitHub Actions CI/CD workflows
-├── build.zig                      - Zig build file
-├── src/                           - Project packages
-│   ├── arch/                      - Architecture specific code
-│   │   ├── x86_64/                  - x86_64 architecture specific code
-│   │   ├── riscv/                   - RISC-V architecture specific code
-│   │   └── arm/                     - ARM architecture specific code
-│   ├── drivers/                   - Device drivers
-│   ├── kernel/                    - Kernel code
-│   ├── lib/                       - Library code
-│   └── tests/                     - Project tests
+├── include/                       - Header files
+├── rtl/                           - RTL source files
+├── tb/                            - Testbench files
+├── Makefile                       - Makefile build script
 ├── LICENSE                        - Project license
 └── README.md                      - You are here
 ```

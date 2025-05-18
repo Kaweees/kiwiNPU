@@ -15,6 +15,7 @@
       in pkgs.mkShell {
         buildInputs = [
           pkgs.gnumake # GNU Make
+          pkgs.uv # Python package manager
           pkgs.verilator # Verilog simulator
           pkgs.iverilog # Verilog simulator
           pkgs.ncurses # tput (terminal formatting)
