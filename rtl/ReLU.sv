@@ -1,9 +1,14 @@
 `timescale 1ns / 1ps
 `include "../include/fixed_point.vh"
 
-module ReLU #(parameter WIDTH = `FP_WIDTH) (
-  input logic signed [WIDTH-1:0] x,
-  output logic signed [WIDTH-1:0] y
+module ReLU #(
+  parameter WIDTH = `FP_WIDTH // Bit width
+) (
+  input logic signed [WIDTH-1:0] in, // Pre-activated value
+  output logic signed [WIDTH-1:0] out // Activated value
 );
-  assign y = (x[WIDTH-1]) ? 0 : x;
+
+  // ReLU activation function: max(0, x)
+  assign out = (in[WIDTH-1]) ? 0 : in;
 endmodule
+
