@@ -5,7 +5,6 @@
 # -----------------------------------------------------------------------------
 # The name of the program to build.
 TARGET := kiwiNPU
-TARGET := lab2-Kaweees
 
 ## Simulator Section: change these variables based on your simulator
 # -----------------------------------------------------------------------------
@@ -58,7 +57,7 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 # header files to preprocess
 ifndef GL
-INCS := -I$(call rwildcard,$(INC_DIR)/,*.svh) -I$(call rwildcard,$(RTL_DIR)/,*.vh) -I$(PDKPATH)
+INCS := -I$(call rwildcard,$(INC_DIR)/,*.svh) -I$(call rwildcard,$(INC_DIR)/,*.vh) -I$(PDKPATH) -I$(RTL_DIR)
 else
 INCS := -I$(realpath gl) -I$(PDKPATH)
 endif
@@ -106,35 +105,32 @@ lint:
 		top_module=$$(basename $$src .sv); \
 		top_module=$$(basename $$top_module .v); \
 		printf "Linting $$src . . . "; \
-		if $(LINT) $(LINT_FLAGS) -I$(INC_DIR) --top-module $$top_module $$src > /dev/null 2>&1; then \
+		if $(LINT) $(LINT_FLAGS) $(INCS) --top-module $$top_module $$src > /dev/null 2>&1; then \
 			printf "$(GREEN)PASSED$(RESET)\n"; \
 		else \
 			printf "$(RED)FAILED$(RESET)\n"; \
-			$(LINT) $(LINT_FLAGS) -I$(INC_DIR) --top-module $$top_module $$src; \
+			$(LINT) $(LINT_FLAGS) $(INCS) --top-module $$top_module $$src; \
 		fi; \
 	done
 
-# Main test target: depends on all individual testbench targets
-test: $(TB_MODULES)
-	@printf "\n$(GREEN)$(BOLD) ----- All Tests Completed ----- $(RESET)\n"
-
-# Generate targets for each testbench module
-$(TB_MODULES):
-	@printf "\n$(GREEN)$(BOLD) ----- Running Test: $@ ----- $(RESET)\n"
-	@printf "\n$(BOLD) Building with $(SIM)... $(RESET)\n"
-	@cd $(TB_DIR); \
-		$(SIM) $(SIM_FLAGS) --top-module $@ $(INCS) $(RTL_SRCS) $(TB_DIR)/$@.sv > build_$@.log
-	@printf "\n$(BOLD) Running... $(RESET)\n"
-	@# Run Binary and Check for Error in Result
-	@if cd $(TB_DIR); \
-		$(OBJS) > results_$@.log \
-		&& ! ( cat results_$@.log | grep -qi error ) \
-		then \
-			printf "$(GREEN)PASSED $@$(RESET)\n"; \
+# Test target: run the testbench
+test:
+	@printf "\n$(GREEN)$(BOLD) ----- Running All Testbenches ----- $(RESET)\n";
+	@for tb in $(TB_SRCS); do \
+		top_module=$$(basename $$tb .sv); \
+		top_module=$$(basename $$top_module .v); \
+		printf "Building $$tb . . . "; \
+		cd $(TB_DIR) && \
+			$(SIM) $(SIM_FLAGS) --top-module $$top_module $(INCS) $(RTL_SRCS) $(TB_DIR)/$$top_module.sv > build_$$top_module.log 2>/dev/null; \
+		cd $(TB_DIR) && \
+		$(OBJ_DIR)/V$$top_module > results_$$top_module.log; \
+		if ! ( cat $(TB_DIR)/results_$$top_module.log | grep -qi error ); then \
+			printf "$(GREEN)PASSED $(RESET)\n"; \
 		else \
-			printf "$(RED)FAILED $@$(RESET)\n"; \
-			cat results_$@.log; \
-		fi;
+			printf "$(RED)FAILED $(RESET)\n"; \
+			cat $(TB_DIR)/results_$$top_module.log; \
+		fi; \
+	done
 
 # Print available tests
 list-tests:
