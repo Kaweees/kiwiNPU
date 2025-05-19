@@ -120,17 +120,21 @@ test:
 	@for tb in $(TB_SRCS); do \
 		top_module=$$(basename $$tb .sv); \
 		top_module=$$(basename $$top_module .v); \
-		printf "Building $$tb . . . "; \
+		printf "Testing $$tb . . . "; \
 		cd $(TB_DIR) && \
-			$(SIM) $(SIM_FLAGS) --top-module $$top_module $(INCS) $(RTL_SRCS) $$tb > $(TB_DIR)/build_$$top_module.log 2>/dev/null; \
+			$(SIM) $(SIM_FLAGS) --top-module $$top_module $(INCS) $(RTL_SRCS) $$tb > $(TB_DIR)/build_$$top_module.log 2>&1; \
 		cd $(TB_DIR) && \
-			$(OBJ_DIR)/V$$top_module > results_$$top_module.log; \
-		if ! ( cat $(TB_DIR)/results_$$top_module.log | grep -qi error ); then \
-			printf "$(GREEN)PASSED $(RESET)\n"; \
+		if [ -f $(OBJ_DIR)/V$$top_module ]; then \
+			{ $(OBJ_DIR)/V$$top_module > results_$$top_module.log; } 2>/dev/null || true; \
+			if ! ( cat $(TB_DIR)/results_$$top_module.log | grep -qi error ); then \
+				printf "$(GREEN)PASSED $(RESET)\n"; \
+			else \
+				printf "$(RED)FAILED $(RESET)\n"; \
+				cat $(TB_DIR)/results_$$top_module.log; \
+			fi; \
 		else \
-			printf "$(RED)FAILED $(RESET)\n"; \
-			cat $(TB_DIR)/results_$$top_module.log; \
-			cat $(TB_DIR)/results_$$top_module.log; \
+			printf "$(RED)FAILED$(RESET)\n"; \
+			cat $(TB_DIR)/build_$$top_module.log; \
 		fi; \
 	done
 

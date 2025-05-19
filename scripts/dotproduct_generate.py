@@ -19,7 +19,7 @@ def generate(
     num_tests: int = 10,
     min_val: int = None,
     max_val: int = None,
-    output_file: str = "tb/dotproduct_testcases.svh",
+    output_file: str = "include/dotproduct_testcases.svh",
     seed: int = None,
 ):
     """
@@ -138,7 +138,6 @@ def generate(
         f.write(f"logic signed [{width-1}:0] test_a[NUM_TESTS][{n}];\n")
         f.write(f"logic signed [{width-1}:0] test_b[NUM_TESTS][{n}];\n")
         f.write(f"logic signed [{width-1}:0] test_expected[NUM_TESTS];\n")
-        f.write(f"string test_names[NUM_TESTS];\n\n")
 
         f.write(f"// Initialize test cases\n")
         f.write(f"function void init_test_cases();\n")
@@ -176,9 +175,6 @@ def generate(
                 f.write(f"  test_expected[{i}] = {width}'h{hex_val};\n")
             else:
                 f.write(f"  test_expected[{i}] = {width}'d{val};\n")
-
-            f.write(f"  test_names[{i}] = \"{test['name']}\";\n\n")
-
         f.write(f"endfunction\n")
 
     print(f"Successfully generated {len(test_cases)} test cases to {output_file}")
