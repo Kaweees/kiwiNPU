@@ -1,23 +1,23 @@
 `timescale 1ns / 1ps
 `include "../include/dotproduct_testcases.svh"
+`include "../include/width.svh"
 
 module tb_dotproduct();
   // Declare test bench parameters
   localparam CLK_PERIOD = 10; // Clock period in ns (100MHz clock)
-  localparam WIDTH = 8; // Bit width
   localparam N = 4; // Vector dimensionality
 
   // Declare test bench input/output signals
   logic sCLK;
-  logic signed [WIDTH-1:0] sA[N], sB[N], sOUT;
+  logic signed [`DATA_WIDTH-1:0] sX[N], sW[N];
+  logic signed [`ACC_WIDTH-1:0] sOUT;
 
   // Instantiate the DotProduct module
   DotProduct #(
-    .WIDTH(WIDTH),
     .N(N)
   ) DUT (
-    .a(sA),
-    .b(sB),
+    .x(sX),
+    .w(sW),
     .out(sOUT)
   ); // Device Under Testing (DUT)
 
@@ -31,39 +31,22 @@ module tb_dotproduct();
   initial begin
     // Initialize signals
     sCLK = 0;
-    sA = {8'h00, 8'h00, 8'h00, 8'h00};
-    sB = {8'h00, 8'h00, 8'h00, 8'h00};
+    init_test_cases();
 
-    // Test cases
-    begin
-      // Test Case 1: Zero
-      sA = {8'h00, 8'h00, 8'h00, 8'h00};
-      sB = {8'h00, 8'h00, 8'h00, 8'h00};
-      @(posedge sCLK);
-      if (sOUT !== 8'h00) begin
-        $error("Test Case 1 failed: Expected 0x%0h, Got 0x%0h", 8'h00, sOUT);
-      end else begin
-        $display("Test Case 1 passed: ReLU(0x%0h) = 0x%0h", sA, sOUT);
+    // Run through all test cases
+    for (int i = 0; i < NUM_DOT_PRODUCT_TEST; i++) begin
+      // Load test vectors
+      for (int j = 0; j < N; j++) begin
+        sX[j] = test_x[i][j];
+        sW[j] = test_w[i][j];
       end
 
-      // Test Case 2: Positive number
-      sA = {8'h03, 8'h01, 8'h01, 8'h02};
-      sB = {8'h03, 8'h01, 8'h02, 8'h01};
+      // Wait for clock edge and check results
       @(posedge sCLK);
-      if (sOUT !== 8'h0E) begin
-        $error("Test Case 2 failed: Expected 0x%0h, Got 0x%0h", 8'h0E, sOUT);
+      if (sOUT !== test_expected[i]) begin
+        $error("Test case 0x%0d failed: Expected 0x%0h, Got 0x%0h", i, test_expected[i], sOUT);
       end else begin
-        $display("Test Case 2 passed: ReLU(0x%0h) = 0x%0h", sA, sOUT);
-      end
-
-      // Test Case 3: Negative number
-      sA = {8'hFF, 8'hFF, 8'hFF, 8'hFF};
-      sB = {8'hFF, 8'hFF, 8'hFF, 8'hFF};
-      @(posedge sCLK);
-      if (sOUT !== 8'h04) begin
-        $error("Test Case 3 failed: Expected 0x%0h, Got 0x%0h", 8'h04, sOUT);
-      end else begin
-        $display("Test Case 3 passed: ReLU(%0h) = %0h", sA, sOUT);
+        $display("Test case 0x%0d passed: Dot product = 0x%0h", i, sOUT);
       end
     end
 

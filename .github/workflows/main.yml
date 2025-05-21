@@ -1,0 +1,36 @@
+---
+name: Python Quality Check and Formatting
+# Controls when the workflow will run
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+defaults:
+  run:
+    working-directory: .
+
+# The sequence of runs in this workflow:
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check OS Version
+        run: lsb_release -a
+      - name: Show Kernel Information
+        run: uname -a
+      - name: Check out Repository Code
+        uses: actions/checkout@v4
+        with:
+          submodules: true # Fetch submodules
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Set up the environment
+        uses: ./.github/actions/setup-env
+      - name: Run checks
+        run: make

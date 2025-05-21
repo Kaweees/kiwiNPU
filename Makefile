@@ -93,10 +93,14 @@ TEST_RESET := $(shell tput sgr0)
 ## Command Section: change these variables based on your commands
 # -----------------------------------------------------------------------------
 # Targets
-.PHONY: all lint test gl openlane clean help
+.PHONY: all install lint test gl openlane clean help
 
 # Default target: build the program
-all: lint test
+all: clean install lint test
+
+# Install target: generate testbenches
+install:
+	uv run scripts/dotproduct_generate.py
 
 # Lint target: lint the source files
 lint:

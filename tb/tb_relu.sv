@@ -3,16 +3,13 @@
 module tb_relu();
   // Declare test bench parameters
   localparam CLK_PERIOD = 10; // Clock period in ns (100MHz clock)
-  localparam WIDTH = 8; // Bit width
 
   // Declare test bench input/output signals
   logic sCLK;
-  logic signed [WIDTH-1:0] sIN, sOUT;
+  logic signed [`DATA_WIDTH-1:0] sIN, sOUT;
 
   // Instantiate the ReLU module
-  ReLU #(
-    .WIDTH(WIDTH)
-  ) DUT (
+  ReLU DUT (
     .in(sIN),
     .out(sOUT)
   ); // Device Under Testing (DUT)

@@ -1,14 +1,18 @@
 `timescale 1ns / 1ps
-`include "../include/fixed_point.vh"
+`include "../include/width.svh"
 
-module ReLU #(
-  parameter WIDTH = `FP_WIDTH // Bit width
-) (
-  input logic signed [WIDTH-1:0] in, // Pre-activated value
-  output logic signed [WIDTH-1:0] out // Activated value
+module ReLU (
+  input logic signed [`DATA_WIDTH-1:0] in, // Pre-activated value
+  output logic signed [`DATA_WIDTH-1:0] out // Activated value
 );
 
   // ReLU activation function: max(0, x)
-  assign out = (in[WIDTH-1]) ? 0 : in;
+  always_comb begin
+    if (in[`DATA_WIDTH-1]) begin
+      out = 0;
+    end else begin
+      out = in;
+    end
+  end
 endmodule
 

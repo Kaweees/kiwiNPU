@@ -1,30 +1,38 @@
 `timescale 1ns / 1ps
-`include "../include/fixed_point.vh"
+`include "../include/width.svh"
 
 module Perceptron #(
-  parameter WIDTH = `FP_WIDTH, // Bit width
   parameter N = 4 // Vector dimensionality
 )(
-  input  logic signed [WIDTH-1:0] x[N], // Input vector
-  input  logic signed [WIDTH-1:0] w[N], // Weight vector
-  input  logic signed [WIDTH-1:0] b,  // Bias
-  output logic signed [WIDTH-1:0] y // Activated value
+  input logic clk, // System clock
+  input logic rst_n, // Asynchronous reset (active low)
+  input  logic signed [`DATA_WIDTH-1:0] x[N], // Input vector
+  input  logic signed [`DATA_WIDTH-1:0] w[N], // Weight vector
+  input  logic signed [`DATA_WIDTH-1:0] b,  // Bias
+  output logic signed [`DATA_WIDTH-1:0] y // Activated value
 );
-  logic signed [WIDTH-1:0] dp_out;
-  logic signed [WIDTH-1:0] pre_activation;
+  logic signed [`ACC_WIDTH-1:0] dp_result; // Result from the dot product
+  logic signed [`ACC_WIDTH-1:0] acc_with_bias; // Accumulator with bias added
+  logic signed [`DATA_WIDTH-1:0] pre; // Pre-activation value
 
   DotProduct #(
-    .WIDTH(WIDTH),
     .N(N)
   ) dot (
-    .a(x), .b(w), .out(dp_out)
+    .x(x), .w(w), .out(dp_result)
   );
 
-  assign pre_activation = dp_out + b;
+  // Add bias to dot product result
+  always_comb begin
+    acc_with_bias = dp_result + $signed({{(`ACC_WIDTH-`DATA_WIDTH){b[`DATA_WIDTH-1]}}, b});
+  end
 
-  // Instantiate the activation module of your choice
-  ReLU #(.WIDTH(WIDTH)) act (
-    .in(pre_activation),
+  Quantizer quant (
+    .in(acc_with_bias),
+    .out(pre)
+  );
+
+  ReLU act (
+    .in(pre),
     .out(y)
   );
 endmodule
