@@ -31,20 +31,20 @@ module tb_dotproduct();
   initial begin
     // Initialize signals
     sCLK = 0;
-    init_test_cases();
+    init_dotproduct_test_cases();
 
     // Run through all test cases
     for (int i = 0; i < NUM_DOT_PRODUCT_TEST; i++) begin
       // Load test vectors
       for (int j = 0; j < N; j++) begin
-        sX[j] = test_x[i][j];
-        sW[j] = test_w[i][j];
+        sX[j] = dotproduct_test_x[i][j];
+        sW[j] = dotproduct_test_w[i][j];
       end
 
       // Wait for clock edge and check results
       @(posedge sCLK);
-      if (sOUT !== test_expected[i]) begin
-        $error("Test case 0x%0d failed: Expected 0x%0h, Got 0x%0h", i, test_expected[i], sOUT);
+      if (sOUT !== dotproduct_test_expected[i]) begin
+        $error("Test case 0x%0d failed: Expected 0x%0h, Got 0x%0h", i, dotproduct_test_expected[i], sOUT);
       end else begin
         $display("Test case 0x%0d passed: Dot product = 0x%0h", i, sOUT);
       end

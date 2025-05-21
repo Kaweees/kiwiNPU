@@ -2,7 +2,7 @@
 `include "../include/width.svh"
 
 module Perceptron #(
-  parameter N = 4 // Vector dimensionality
+  parameter int N = 4, // Data dimensionality
 )(
   input logic clk, // System clock
   input logic rst_n, // Asynchronous reset (active low)

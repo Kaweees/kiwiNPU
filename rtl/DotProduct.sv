@@ -2,7 +2,7 @@
 `include "../include/width.svh"
 
 module DotProduct #(
-  parameter N = 4 // Vector dimensionality
+  parameter int N = 4, // Data dimensionality
 )(
   input  logic signed [`DATA_WIDTH-1:0] x[N], // First vector
   input  logic signed [`DATA_WIDTH-1:0] w[N], // Second vector

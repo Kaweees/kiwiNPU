@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "../include/perceptron_testcases.svh"
 `include "../include/width.svh"
 
 module tb_perceptron();
@@ -27,21 +28,36 @@ module tb_perceptron();
     sCLK = 1'b1;  // Start simulation with positive edge
     // Toggle the clock every 5 ns
     forever #(CLK_PERIOD / 2) sCLK = ~sCLK;
-  end;
+  end
 
   initial begin
     // Initialize signals
     sCLK = 0;
-    sX = '{default: 0};
-    sW = '{default: 0};
-    sB = 8'h00;
+    sRST_N = 0;
+    init_perceptron_test_cases();
 
-    // Test cases
-    begin
-      // Test case 1: Basic computation
-      sX = '{default: 0};
-      sW = '{default: 0};
-      sB = 8'h00;
+    // Reset for a few clock cycles
+    @(posedge sCLK);
+    sRST_N = 1;  // Release reset
+
+    // Run through all test cases
+    for (int i = 0; i < NUM_PERCEPTRON_TEST; i++) begin
+      // Load test vectors
+      for (int j = 0; j < N; j++) begin
+        sX[j] = perceptron_test_x[i][j];
+        sW[j] = perceptron_test_w[i][j];
+      end
+      sB = perceptron_test_b[i];
+
+      // Wait for clock edge and check results
+      @(posedge sCLK);
+      @(posedge sCLK);  // Extra cycle to allow for processing
+
+      if (sY !== perceptron_test_expected[i]) begin
+        $error("Test case %0d failed: Expected 0x%0h, Got 0x%0h", i, perceptron_test_expected[i], sY);
+      end else begin
+        $display("Test case %0d passed: Perceptron output = 0x%0h", i, sY);
+      end
     end
 
     $display("All tests completed!");
