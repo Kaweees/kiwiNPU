@@ -3,22 +3,28 @@
 
 module Perceptron #(
   parameter int N = 4, // Data dimensionality
+  parameter int DATA_WIDTH = `DATA_WIDTH, // Data width
+  parameter int ACC_WIDTH = `ACC_WIDTH // Accumulator width
 )(
   input logic clk, // System clock
   input logic rst_n, // Asynchronous reset (active low)
-  input  logic signed [`DATA_WIDTH-1:0] x[N], // Input vector
-  input  logic signed [`DATA_WIDTH-1:0] w[N], // Weight vector
-  input  logic signed [`DATA_WIDTH-1:0] b,  // Bias
-  output logic signed [`DATA_WIDTH-1:0] y // Activated value
+  input logic signed [DATA_WIDTH-1:0] x[N], // Input vector
+  input logic signed [DATA_WIDTH-1:0] w[N], // Weight vector
+  input logic signed [DATA_WIDTH-1:0] b, // Bias
+  output logic signed [DATA_WIDTH-1:0] y // Activated value
 );
   logic signed [`ACC_WIDTH-1:0] dp_result; // Result from the dot product
   logic signed [`ACC_WIDTH-1:0] acc_with_bias; // Accumulator with bias added
   logic signed [`DATA_WIDTH-1:0] pre; // Pre-activation value
 
   DotProduct #(
-    .N(N)
+    .N(N),
+    .DATA_WIDTH(DATA_WIDTH),
+    .ACC_WIDTH(ACC_WIDTH)
   ) dot (
-    .x(x), .w(w), .out(dp_result)
+    .x(x),
+    .w(w),
+    .dp(dp_result_comb)
   );
 
   // Add bias to dot product result

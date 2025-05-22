@@ -18,7 +18,7 @@ module tb_dotproduct();
   ) DUT (
     .x(sX),
     .w(sW),
-    .out(sOUT)
+    .dp(sOUT)
   ); // Device Under Testing (DUT)
 
   // Clock generation

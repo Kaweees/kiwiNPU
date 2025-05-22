@@ -32,13 +32,13 @@ module tb_perceptron();
 
   initial begin
     // Initialize signals
-    sCLK = 0;
-    sRST_N = 0;
+    sCLK = 1'b0;
+    sRST_N = 1'b0;
     init_perceptron_test_cases();
 
     // Reset for a few clock cycles
     @(posedge sCLK);
-    sRST_N = 1;  // Release reset
+    sRST_N = 1'b1;  // Release reset
 
     // Run through all test cases
     for (int i = 0; i < NUM_PERCEPTRON_TEST; i++) begin
@@ -54,9 +54,9 @@ module tb_perceptron();
       @(posedge sCLK);  // Extra cycle to allow for processing
 
       if (sY !== perceptron_test_expected[i]) begin
-        $error("Test case %0d failed: Expected 0x%0h, Got 0x%0h", i, perceptron_test_expected[i], sY);
+        $error("Test case %03d failed: Expected %0d'b%b (%03d), Got %0d'b%b (%03d)", i, `DATA_WIDTH, perceptron_test_expected[i], perceptron_test_expected[i], `DATA_WIDTH, sY, sY);
       end else begin
-        $display("Test case %0d passed: Perceptron output = 0x%0h", i, sY);
+        $display("Test case %03d passed: Perceptron output = %0d'b%b (%03d)", i, `DATA_WIDTH, sY, sY);
       end
     end
 
