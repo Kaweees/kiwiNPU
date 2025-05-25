@@ -51,7 +51,7 @@ def generate(
     # Generate random test cases
     for i in range(num_tests):
         # Create test case with different strategies
-        strategy = i % 4  # Four different strategies
+        strategy = i % 6  # Six different strategies
 
         if strategy == 0:
             # Completely random values
@@ -67,6 +67,20 @@ def generate(
             # Positive/negative mix with low probability of overflow
             x = np.random.randint(0, max_val // 2 + 1, size=n)
             w = np.random.randint(min_val // 2, 1, size=n)
+        elif strategy == 3:
+            # Some values close to limits to test edge cases
+            choices = np.array([min_val, max_val])
+            x = np.array([np.random.choice(choices) for _ in range(n)])
+            w = np.array([np.random.choice(choices) for _ in range(n)])
+        elif strategy == 4:
+            # Non-saturating: ensure dot(x, w) + b is within [-100, 100]
+            x = np.random.randint(-8, 9, size=n)
+            w = np.random.randint(-8, 9, size=n)
+            dot_product = int(np.dot(x, w))
+            # Pick b so that result stays in range
+            min_b = max(min_val, -100 - dot_product)
+            max_b = min(max_val, 100 - dot_product)
+            b = np.random.randint(min_b, max_b + 1)
         else:
             # Some values close to limits to test edge cases
             choices = np.array([min_val, max_val])

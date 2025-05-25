@@ -160,40 +160,32 @@ def generate(
             # Write input vector X
             for j in range(n):
                 val = test["x"][j]
-                if val < 0:
-                    hex_val = format((1 << data_width) + val, f"0{(data_width+3)//4}x")
-                    f.write(
-                        f"  perceptron_test_x[{i}][{j}] = {data_width}'h{hex_val};\n"
-                    )
-                else:
-                    f.write(f"  perceptron_test_x[{i}][{j}] = {data_width}'d{val};\n")
+                bin_val = format(
+                    (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
+                )
+                f.write(f"  perceptron_test_x[{i}][{j}] = {data_width}'b{bin_val};\n")
 
             # Write weight vector W
             for j in range(n):
                 val = test["w"][j]
-                if val < 0:
-                    hex_val = format((1 << data_width) + val, f"0{(data_width+3)//4}x")
-                    f.write(
-                        f"  perceptron_test_w[{i}][{j}] = {data_width}'h{hex_val};\n"
-                    )
-                else:
-                    f.write(f"  perceptron_test_w[{i}][{j}] = {data_width}'d{val};\n")
+                bin_val = format(
+                    (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
+                )
+                f.write(f"  perceptron_test_w[{i}][{j}] = {data_width}'b{bin_val};\n")
 
             # Write bias B
             val = test["b"]
-            if val < 0:
-                hex_val = format((1 << data_width) + val, f"0{(data_width+3)//4}x")
-                f.write(f"  perceptron_test_b[{i}] = {data_width}'h{hex_val};\n")
-            else:
-                f.write(f"  perceptron_test_b[{i}] = {data_width}'d{val};\n")
+            bin_val = format(
+                (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
+            )
+            f.write(f"  perceptron_test_b[{i}] = {data_width}'b{bin_val};\n")
 
             # Write expected output
             val = test["expected"]
-            if val < 0:
-                hex_val = format((1 << data_width) + val, f"0{(data_width+3)//4}x")
-                f.write(f"  perceptron_test_expected[{i}] = {data_width}'h{hex_val};\n")
-            else:
-                f.write(f"  perceptron_test_expected[{i}] = {data_width}'d{val};\n")
+            bin_val = format(
+                (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
+            )
+            f.write(f"  perceptron_test_expected[{i}] = {data_width}'b{bin_val};\n")
 
             # Add a comment showing the computation details
             f.write(

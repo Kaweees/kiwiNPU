@@ -13,8 +13,9 @@ module Quantizer #(
   localparam MAX_VAL = (1 << (DATA_WIDTH - 1)) - 1;  // 2^(DATA_WIDTH-1) - 1
 
   always_comb begin
-    if (in >  MAX_VAL) out =  MAX_VAL;
-    else if (in < MIN_VAL) out = MIN_VAL;
-    else out = in[DATA_WIDTH-1:0];
+  if (in >  MAX_VAL) out =  MAX_VAL;
+  else if (in < MIN_VAL) out = MIN_VAL;
+    // Explicit cast to avoid width truncation warning
+  else out = $signed(in[DATA_WIDTH-1:0]);
   end
 endmodule

@@ -72,8 +72,7 @@ To get a local copy of the project up and running on your machine, follow these 
 3. Run the project
 
    ```sh
-   uv run ./scripts/dotproduct_generate.py
-   uv run ./scripts/perceptron_generate.py
+   uv run ./scripts/dotproduct_generate.py && uv run ./scripts/perceptron_generate.py
    make
    ```
 
