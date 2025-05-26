@@ -14,6 +14,7 @@ module DotProduct #(
     dp = '0;
     for (int i = 0; i < N; i++) begin
       dp += x[i] * w[i];
+      $display("[Perceptron DEBUG] x[%0d]=%0d, w[%0d]=%0d, dp=%0d", i, x[i], i, w[i], dp);
     end
   end
 endmodule

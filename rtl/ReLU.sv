@@ -17,4 +17,3 @@ module ReLU #(
     end
   end
 endmodule
-

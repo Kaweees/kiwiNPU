@@ -5,16 +5,15 @@
 module tb_dotproduct();
   // Declare test bench parameters
   localparam CLK_PERIOD = 10; // Clock period in ns (100MHz clock)
-  localparam N = 4; // Vector dimensionality
 
   // Declare test bench input/output signals
   logic sCLK;
-  logic signed [`DATA_WIDTH-1:0] sX[N], sW[N];
+  logic signed [`DATA_WIDTH-1:0] sX[`N], sW[`N];
   logic signed [`ACC_WIDTH-1:0] sOUT;
 
   // Instantiate the DotProduct module
   DotProduct #(
-    .N(N)
+    .N(`N)
   ) DUT (
     .x(sX),
     .w(sW),
@@ -30,13 +29,13 @@ module tb_dotproduct();
 
   initial begin
     // Initialize signals
-    sCLK = 0;
+    sCLK = 1'b0;
     init_dotproduct_test_cases();
 
     // Run through all test cases
     for (int i = 0; i < NUM_DOT_PRODUCT_TEST; i++) begin
       // Load test vectors
-      for (int j = 0; j < N; j++) begin
+      for (int j = 0; j < `N; j++) begin
         sX[j] = dotproduct_test_x[i][j];
         sW[j] = dotproduct_test_w[i][j];
       end
@@ -44,9 +43,9 @@ module tb_dotproduct();
       // Wait for clock edge and check results
       @(posedge sCLK);
       if (sOUT !== dotproduct_test_expected[i]) begin
-        $error("Test case 0x%0d failed: Expected 0x%0h, Got 0x%0h", i, dotproduct_test_expected[i], sOUT);
+        $error("Test case %03d failed: Expected %0d'b%b (%03d), Got %0d'b%b (%03d)", i, `ACC_WIDTH, dotproduct_test_expected[i], dotproduct_test_expected[i], `ACC_WIDTH, sOUT, sOUT);
       end else begin
-        $display("Test case 0x%0d passed: Dot product = 0x%0h", i, sOUT);
+        $display("Test case %03d passed: DotProduct(%0d'b%b, %0d'b%b) = %0d'b%b", i, `DATA_WIDTH, sX, `DATA_WIDTH, sW, `ACC_WIDTH, sOUT);
       end
     end
 

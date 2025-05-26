@@ -102,6 +102,7 @@ all: clean install lint test
 install:
 	uv run scripts/dotproduct_generate.py
 	uv run scripts/perceptron_generate.py
+	uv run scripts/quantizer_generate.py
 
 # Lint target: lint the source files
 lint:

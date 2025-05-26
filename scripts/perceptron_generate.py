@@ -5,6 +5,7 @@
 #     "numpy>=1.24.0",
 # ]
 # ///
+import math
 import typer
 import random
 import os
@@ -18,7 +19,6 @@ app = typer.Typer()
 @app.command()
 def generate(
     data_width: int = 8,
-    acc_width: int = 16,
     n: int = 4,
     num_tests: int = 10,
     output_file: str = "include/perceptron_testcases.svh",
@@ -28,7 +28,6 @@ def generate(
     Generate test cases for the perceptron module.
 
     data_width: Bit width of input vectors and weights
-    acc_width: Bit width of internal accumulator
     n: Vector dimensionality
     num_tests: Number of test cases to generate
     output_file: Output file path
@@ -36,6 +35,7 @@ def generate(
     """
     min_val: int = -(2 ** (data_width - 1))
     max_val: int = 2 ** (data_width - 1) - 1
+    acc_width: int = data_width + data_width + math.ceil(math.log2(n))
 
     # Initialize random seed if provided
     if seed is not None:

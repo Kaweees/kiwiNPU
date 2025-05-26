@@ -59,5 +59,4 @@ module Perceptron #(
       $display("[Perceptron DEBUG] dp_result=%0d, sum=%0d, pre=%0d, relu_out=%0d, y=%0d", dp_result, sum, pre, relu_out, y);
     end
   end
-
 endmodule

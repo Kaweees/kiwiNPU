@@ -5,15 +5,15 @@
 module tb_perceptron();
   // Declare test bench parameters
   localparam CLK_PERIOD = 10; // Clock period in ns (100MHz clock)
-  localparam N = 4; // Vector dimensionality
+  localparam PIPELINE_STAGES = 3; // Number of pipeline stages in the Perceptron
 
   // Declare test bench input/output signals
   logic sCLK, sRST_N;
-  logic signed [`DATA_WIDTH-1:0] sX[N], sW[N], sB, sY;
+  logic signed [`DATA_WIDTH-1:0] sX[`N], sW[`N], sB, sY;
 
   // Instantiate the Perceptron module
   Perceptron #(
-    .N(N)
+    .N(`N)
   ) DUT (
     .clk(sCLK),
     .rst_n(sRST_N),
@@ -43,20 +43,20 @@ module tb_perceptron();
     // Run through all test cases
     for (int i = 0; i < NUM_PERCEPTRON_TEST; i++) begin
       // Load test vectors
-      for (int j = 0; j < N; j++) begin
+      for (int j = 0; j < `N; j++) begin
         sX[j] = perceptron_test_x[i][j];
         sW[j] = perceptron_test_w[i][j];
       end
       sB = perceptron_test_b[i];
 
       // Wait for clock edge and check results
-      @(posedge sCLK);
-      @(posedge sCLK);  // Extra cycle to allow for processing
-
+      for (int stage = 0; stage < PIPELINE_STAGES; stage++) begin
+        @(posedge sCLK);
+      end
       if (sY !== perceptron_test_expected[i]) begin
         $error("Test case %03d failed: Expected %0d'b%b (%03d), Got %0d'b%b (%03d)", i, `DATA_WIDTH, perceptron_test_expected[i], perceptron_test_expected[i], `DATA_WIDTH, sY, sY);
       end else begin
-        $display("Test case %03d passed: Perceptron output = %0d'b%b (%03d)", i, `DATA_WIDTH, sY, sY);
+        $display("Test case %03d passed: Perceptron(%0d'b%b, %0d'b%b) = %0d'b%b", i, `DATA_WIDTH, sX, `DATA_WIDTH, sW, `DATA_WIDTH, sY);
       end
     end
 

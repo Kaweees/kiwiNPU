@@ -9,7 +9,10 @@
 // Bit-width for quantized data (e.g. INT8)
 `define DATA_WIDTH `QUANT_INT8
 
+// Define N (example value, adjust as necessary)
+`define N 4
+
 // Bit-width for the accumulator
-`define ACC_WIDTH 16
+`define ACC_WIDTH (`DATA_WIDTH + `DATA_WIDTH + $clog2(`N))
 
 `endif // WIDTH_SVH

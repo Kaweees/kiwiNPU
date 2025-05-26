@@ -1,10 +1,10 @@
 `timescale 1ns / 1ps
 `include "../include/width.svh"
+`include "../include/quantizer_testcases.svh"
 
 module tb_quantizer;
   // Declare test bench parameters
   localparam CLK_PERIOD = 10; // Clock period in ns (100MHz clock)
-  localparam N = 4; // Vector dimensionality
 
   // Declare test bench input/output signals
   logic sCLK;
@@ -26,63 +26,30 @@ module tb_quantizer;
 
   initial begin
     // Initialize signals
-    sCLK = 0;
-    sIN = 0;
+    sCLK = 1'b0;
+    sIN = 'b0;
+    init_quantizer_test_cases();
 
-    // Test cases
-    begin
-      // Test case 1: Overflowed positive number
-      sIN = 16'h7FFF;
-      @(posedge sCLK);
-      if (sOUT !== 8'h7F) begin
-        $error("Test case 1 failed: Expected 0x%0h, Got 0x%0h", 8'h7F, sOUT);
-      end else begin
-        $display("Test case 1 passed: Quantizer(0x%0h) = 0x%0h", sIN, sOUT);
-      end
+    // Run through all test cases
+    for (int i = 0; i < NUM_QUANTIZER_TEST; i++) begin
+      sIN = quantizer_test_input[i];
 
-      // Test case 2: Overflowed negative number
-      sIN = 16'h8000;
+      // Wait for clock edge and check results
       @(posedge sCLK);
-      if (sOUT !== 8'h80) begin
-        $error("Test case 2 failed: Expected 0x%0h, Got 0x%0h", 8'h80, sOUT);
+      if (sOUT !== quantizer_test_expected[i]) begin
+        $error("Test case %03d failed: Expected %0d'b%b (%03d), Got %0d'b%b (%03d)", i, `DATA_WIDTH, quantizer_test_expected[i], quantizer_test_expected[i], `DATA_WIDTH, sOUT, sOUT);
       end else begin
-        $display("Test case 2 passed: Quantizer(0x%0h) = 0x%0h", sIN, sOUT);
-      end
-
-      // Test case 3: Non-overflowing positive number
-      sIN = 16'h0042;  // 66 in decimal
-      @(posedge sCLK);
-      if (sOUT !== 8'h42) begin
-        $error("Test case 2 failed: Expected 0x%0h, Got 0x%0h", 8'h42, sOUT);
-      end else begin
-        $display("Test case 2 passed: Quantizer(0x%0h) = 0x%0h", sIN, sOUT);
-      end
-
-      // Test case 4: Non-overflowing negative number
-      sIN = 16'hFFD6;
-      @(posedge sCLK);
-      if (sOUT !== 8'hD6) begin
-        $error("Test case 3 failed: Expected 0x%0h, Got 0x%0h", 8'hD6, sOUT);
-      end else begin
-        $display("Test case 3 passed: Quantizer(0x%0h) = 0x%0h", sIN, sOUT);
-      end
-
-      // Test case 5: Negative number
-      sIN = 16'h8000;
-      @(posedge sCLK);
-      if (sOUT !== 8'h80) begin
-        $error("Test case 4 failed: Expected 0x%0h, Got 0x%0h", 8'hFF, sOUT);
-      end else begin
-        $display("Test case 4 passed: Quantizer(0x%0h) = 0x%0h", sIN, sOUT);
+        $display("Test case %03d passed: Quantizer(%0d'b%b) = %0d'b%b", i, `ACC_WIDTH, sIN, `DATA_WIDTH, sOUT);
       end
     end
+
     $display("All tests completed!");
     $finish(); // Terminate simulation
   end
 
   // Waveform dump
   initial begin
-    $dumpfile("tb_dotproduct.vcd");
-    $dumpvars(0, tb_dotproduct);
+    $dumpfile("tb_quantizer.vcd");
+    $dumpvars(0, tb_quantizer);
   end
 endmodule
