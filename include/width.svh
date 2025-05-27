@@ -12,6 +12,9 @@
 // Define N (example value, adjust as necessary)
 `define N 4
 
+// Define M (example value, adjust as necessary)
+`define M 4
+
 // Bit-width for the accumulator
 `define ACC_WIDTH (`DATA_WIDTH + `DATA_WIDTH + $clog2(`N))
 

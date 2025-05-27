@@ -4,3 +4,6 @@ runs/
 *log
 *obj_dir
 /gl
+
+# Test cases
+*_testcases.svh
