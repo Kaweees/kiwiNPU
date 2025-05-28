@@ -1,9 +1,9 @@
 {
-  "VERILOG_FILES": ["dir::rtl/*.sv"],
+  "VERILOG_FILES": "dir::rtl/*.sv",
   "meta": {
     "version": 2
   },
-  "DESIGN_NAME": "kiwiNPU",
+  "DESIGN_NAME": "KiwiNPU",
   "CLOCK_PERIOD": 10,
   "CLOCK_PORT": "clk",
   "FP_PDN_VOFFSET": 7,
