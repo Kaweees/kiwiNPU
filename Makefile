@@ -106,7 +106,7 @@ install:
 
 # Lint target: lint the source files
 lint:
-	@printf "\n$(GREEN)$(BOLD) ----- Linting All Modules ----- $(RESET)\n"
+	@printf "\n$(GREEN)$(BOLD) ----- Linting All Modules with $(LINT) ----- $(RESET)\n"
 	@for src in $(RTL_SRCS); do \
 		top_module=$$(basename $$src .sv); \
 		top_module=$$(basename $$top_module .v); \
@@ -121,7 +121,7 @@ lint:
 
 # Test target: run the testbenches
 test:
-	@printf "\n$(GREEN)$(BOLD) ----- Running All Testbenches ----- $(RESET)\n";
+	@printf "\n$(GREEN)$(BOLD) ----- Running All Testbenches with $(SIM) ----- $(RESET)\n";
 	@mkdir -p $(OBJ_DIR)
 	@for tb in $(TB_SRCS); do \
 		top_module=$$(basename $$tb .sv); \

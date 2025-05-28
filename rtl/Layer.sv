@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 `include "../include/width.svh"
 
 module Layer #(
@@ -17,7 +16,11 @@ module Layer #(
   genvar i;
   generate
     for (i = 0; i < OUT_N; i++) begin : gen_neurons
-      Perceptron #(.N(IN_N))
+      Perceptron #(
+        .N(IN_N),
+        .DATA_WIDTH(DATA_WIDTH),
+        .ACC_WIDTH(ACC_WIDTH)
+      )
         u_neuron (
           .clk (clk),
           .rst_n (rst_n),
