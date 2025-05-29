@@ -9,20 +9,28 @@ module kiwiNPU #(
 )(
   input logic clk, // System clock
   input logic rst_n, // Asynchronous reset (active low)
-  // Input vector
-  input logic signed [DATA_WIDTH-1:0] in_vec [IN_N],
-  // Weights and biases for first (input->hidden) layer
-  input logic signed [DATA_WIDTH-1:0] weights1 [HIDDEN_N][IN_N],
-  input logic signed [DATA_WIDTH-1:0] biases1 [HIDDEN_N],
-  // Weights and biases for second (hidden->output) layer
-  input logic signed [DATA_WIDTH-1:0] weights2 [OUT_N][HIDDEN_N],
-  input logic signed [DATA_WIDTH-1:0] biases2 [OUT_N],
-  // Output vector
-  output logic signed [DATA_WIDTH-1:0] out_vec [OUT_N]
+  // Input vector (packed bus)
+  input logic signed [IN_N*DATA_WIDTH-1:0] in_vec,
+  // Weights and biases for first (input->hidden) layer (packed)
+  input logic signed [HIDDEN_N*IN_N*DATA_WIDTH-1:0] weights1,
+  input logic signed [HIDDEN_N*DATA_WIDTH-1:0] biases1,
+  // Weights and biases for second (hidden->output) layer (packed)
+  input logic signed [OUT_N*HIDDEN_N*DATA_WIDTH-1:0] weights2,
+  input logic signed [OUT_N*DATA_WIDTH-1:0] biases2,
+  // Output vector (packed bus)
+  output logic signed [OUT_N*DATA_WIDTH-1:0] out_vec
 );
-  // Intermediate signal for hidden layer output
-  logic signed [DATA_WIDTH-1:0] hidden_vec [HIDDEN_N];
-
+  // Internal unpacked arrays for computation
+  logic signed [DATA_WIDTH-1:0] in_vec_arr [IN_N];
+  // logic signed [DATA_WIDTH-1:0] hidden_vec_arr [HIDDEN_N];
+  logic signed [HIDDEN_N*DATA_WIDTH-1:0] hidden_vec;
+  // Unpack input vector
+  genvar i;
+  generate
+    for (i = 0; i < IN_N; i++) begin
+      assign in_vec_arr[i] = in_vec[i*DATA_WIDTH +: DATA_WIDTH];
+    end
+  endgenerate
   // First layer: input -> hidden
   Layer #(
     .IN_N(IN_N),
@@ -37,7 +45,6 @@ module kiwiNPU #(
     .biases(biases1),
     .out_vec(hidden_vec)
   );
-
   // Second layer: hidden -> output
   Layer #(
     .IN_N(HIDDEN_N),
@@ -52,5 +59,4 @@ module kiwiNPU #(
     .biases(biases2),
     .out_vec(out_vec)
   );
-
 endmodule
