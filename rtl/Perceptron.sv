@@ -2,8 +2,8 @@
 
 module Perceptron #(
   parameter int N = 16, // Data dimensionality
-  parameter int DATA_WIDTH = 8, // Data width
-  parameter int ACC_WIDTH = 16 // Accumulator width
+  parameter int DATA_WIDTH = `DATA_WIDTH, // Data width
+  parameter int ACC_WIDTH = `ACC_WIDTH // Accumulator width
 )(
   input logic clk, // System clock
   input logic rst_n, // Asynchronous reset (active low)

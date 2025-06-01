@@ -1,6 +1,6 @@
 `include "../include/width.svh"
 
-module kiwiNPU #(
+module KiwiNPU #(
   parameter int IN_N = `N,         // Input vector size
   parameter int HIDDEN_N = `M,    // Hidden layer size
   parameter int OUT_N = `N,       // Output vector size

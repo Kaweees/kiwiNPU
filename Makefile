@@ -100,9 +100,10 @@ all: clean install lint test
 
 # Install target: generate testbenches
 install:
-	uv run scripts/dotproduct_generate.py
-	uv run scripts/perceptron_generate.py
-	uv run scripts/quantizer_generate.py
+	@echo "Generating testbenches..."
+	@uv run scripts/dotproduct_generate.py
+	@uv run scripts/perceptron_generate.py
+	@uv run scripts/quantizer_generate.py
 
 # Lint target: lint the source files
 lint:
@@ -128,7 +129,9 @@ test:
 		top_module=$$(basename $$top_module .v); \
 		printf "Testing $$tb . . . "; \
 		cd $(TB_DIR) && \
+		if [ ! -f $(OBJ_DIR)/V$$top_module ] || [ $$tb -nt $(OBJ_DIR)/V$$top_module ]; then \
 			$(SIM) $(SIM_FLAGS) --top-module $$top_module $(INCS) $(RTL_SRCS) $$tb > $(TB_DIR)/build_$$top_module.log 2>&1; \
+		fi; \
 		cd $(TB_DIR) && \
 		if [ -f $(OBJ_DIR)/V$$top_module ]; then \
 			{ $(OBJ_DIR)/V$$top_module > results_$$top_module.log; } 2>/dev/null || true; \
@@ -142,13 +145,6 @@ test:
 			printf "$(RED)FAILED$(RESET)\n"; \
 			cat $(TB_DIR)/build_$$top_module.log; \
 		fi; \
-	done
-
-# Print available tests
-list-tests:
-	@printf "\n$(GREEN)$(BOLD) ----- Available Tests ----- $(RESET)\n"
-	@for test in $(TB_MODULES); do \
-		printf "  $$test\n"; \
 	done
 
 # GL target: run gate level verification (GL) tests
@@ -173,8 +169,8 @@ openroad:
 clean:
 	@echo "Cleaning $(TARGET)..."
 	@rm -rf $(OBJ_DIR)
-	@rm -f `find $(TB_DIR) -iname "*.vcd"`
-	@rm -f `find $(TB_DIR) -iname "*.log"`
-	@rm -f `find $(TB_DIR) -iname "a.out"`
-	@rm -rf `find $(TB_DIR) -iname "obj_dir"`
+	@find $(TB_DIR) -type f -iname "*.vcd" -exec rm -rf {} +
+	@find $(TB_DIR) -type f -iname "*.log" -exec rm -rf {} +
+	@find $(TB_DIR) -type f -iname "a.out" -exec rm -rf {} +
+	@find $(TB_DIR) -type d -name "obj_dir" -exec rm -rf {} +
 	@rm -rf runs

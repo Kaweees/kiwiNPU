@@ -66,14 +66,12 @@ To get a local copy of the project up and running on your machine, follow these 
 
    ```sh
    nix develop
-   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 3. Run the project
 
    ```sh
-   uv run ./scripts/dotproduct_generate.py && uv run ./scripts/perceptron_generate.py && uv run ./scripts/quantizer_generate.py
-   make
+   ./scripts/run_tests.sh
    ```
 
 <!-- PROJECT FILE STRUCTURE -->
