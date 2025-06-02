@@ -2,14 +2,13 @@
 `include "../include/perceptron_testcases.svh"
 `include "../include/width.svh"
 
-module tb_perceptron();
+module tb_perceptron ();
   // Declare test bench parameters
-  localparam CLK_PERIOD = 10; // Clock period in ns (100MHz clock)
-  localparam PIPELINE_STAGES = 3; // Number of pipeline stages in the Perceptron
+  localparam CLK_PERIOD = 10;  // Clock period in ns (100MHz clock)
+  localparam PIPELINE_STAGES = 3;  // Number of pipeline stages in the Perceptron
 
   // Declare test bench input/output signals
   logic sCLK, sRST_N;
-  logic signed [`DATA_WIDTH-1:0] sX[`N], sW[`N], sB, sY;
   logic signed [`DATA_WIDTH - 1 : 0] sX_arr[`N], sW_arr[`N], sB, sY;
   logic signed [`N * `DATA_WIDTH - 1 : 0] sX, sW;  // Packed vectors
 
@@ -25,12 +24,12 @@ module tb_perceptron();
   Perceptron #(
     .N(`N)
   ) DUT (
-    .clk(sCLK),
+    .clk  (sCLK),
     .rst_n(sRST_N),
-    .x(sX),
-    .w(sW),
-    .b(sB),
-    .y(sY)
+    .x    (sX),
+    .w    (sW),
+    .b    (sB),
+    .y    (sY)
   );
 
   // Clock generation
@@ -42,7 +41,7 @@ module tb_perceptron();
 
   initial begin
     // Initialize signals
-    sCLK = 1'b0;
+    sCLK   = 1'b0;
     sRST_N = 1'b0;
     init_perceptron_test_cases();
 
@@ -64,14 +63,17 @@ module tb_perceptron();
         @(posedge sCLK);
       end
       if (sY !== perceptron_test_expected[i]) begin
-        $error("Test case %03d failed: Expected %0d'b%b (%03d), Got %0d'b%b (%03d)", i, `DATA_WIDTH, perceptron_test_expected[i], perceptron_test_expected[i], `DATA_WIDTH, sY, sY);
+        $error({"Test case %03d failed: Expected %0d'b%b (%03d), Got %0d'b%b ", "(%03d)"}, i,
+                 `DATA_WIDTH, perceptron_test_expected[i], perceptron_test_expected[i],
+                 `DATA_WIDTH, sY, sY);
       end else begin
-        $display("Test case %03d passed: Perceptron(%0d'b%b, %0d'b%b) = %0d'b%b", i, `DATA_WIDTH, sX, `DATA_WIDTH, sW, `DATA_WIDTH, sY);
+        $display("Test case %03d passed: Perceptron(%0d'b%b, %0d'b%b) = %0d'b%b", i, `DATA_WIDTH,
+                 sX, `DATA_WIDTH, sW, `DATA_WIDTH, sY);
       end
     end
 
     $display("All tests completed!");
-    $finish(); // Terminate simulation
+    $finish();  // Terminate simulation
   end
 
   // Waveform dump

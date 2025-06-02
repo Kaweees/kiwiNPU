@@ -1,18 +1,19 @@
 `timescale 1ns / 1ps
+`include "../include/width.svh"
 
-module tb_relu();
+module tb_relu ();
   // Declare test bench parameters
-  localparam CLK_PERIOD = 10; // Clock period in ns (100MHz clock)
+  localparam CLK_PERIOD = 10;  // Clock period in ns (100MHz clock)
 
   // Declare test bench input/output signals
   logic sCLK;
-  logic signed [`DATA_WIDTH-1:0] sIN, sOUT;
+  logic signed [`DATA_WIDTH - 1 : 0] sIN, sOUT;
 
   // Instantiate the ReLU module
   ReLU DUT (
-    .in(sIN),
+    .in (sIN),
     .out(sOUT)
-  ); // Device Under Testing (DUT)
+  );  // Device Under Testing (DUT)
 
   // Clock generation
   initial begin
@@ -24,7 +25,7 @@ module tb_relu();
   initial begin
     // Initialize signals
     sCLK = 0;
-    sIN = 0;
+    sIN  = 0;
 
     // Test cases
     begin
@@ -47,7 +48,7 @@ module tb_relu();
       end
 
       // Test Case 3: Negative number
-      sIN = 8'hFF;// Some negative number (MSB=1)
+      sIN = 8'hFF;  // Some negative number (MSB=1)
       @(posedge sCLK);
       if (sOUT !== 8'h00) begin
         $error("Test Case 3 failed: Expected 0x%0h, Got 0x%0h", 8'h00, sOUT);
@@ -57,7 +58,7 @@ module tb_relu();
     end
 
     $display("All tests completed!");
-    $finish(); // Terminate simulation
+    $finish();  // Terminate simulation
   end
 
   // Waveform dump
