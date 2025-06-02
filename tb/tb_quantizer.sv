@@ -22,7 +22,7 @@ module tb_quantizer;
     sCLK = 1'b1;  // Start simulation with positive edge
     // Toggle the clock every 5 ns
     forever #(CLK_PERIOD / 2) sCLK = ~sCLK;
-  end;
+  end
 
   initial begin
     // Initialize signals

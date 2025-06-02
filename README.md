@@ -31,7 +31,6 @@ A Neural Processing Unit (NPU) accelerator ASIC designed for deep learning infer
 [![SystemVerilog][SystemVerilog-shield]][SystemVerilog-url]
 [![GNU Make][GNU-Make-shield]][GNU-Make-url]
 [![NixOS][NixOS-shield]][NixOS-url]
-[![GitHub Actions][github-actions-shield]][github-actions-url]
 
 <!-- PROJECT PREVIEW -->
 ## Preview
@@ -112,5 +111,3 @@ The source code for this project is distributed under the terms of the GNU Gener
 [GNU-Make-url]: https://www.gnu.org/software/make/
 [NixOS-shield]: https://img.shields.io/badge/nix%20flakes-%23008080.svg?style=for-the-badge&logo=NixOS&logoColor=5277C3&labelColor=222222&color=5277C3
 [NixOS-url]: https://nixos.org/
-[github-actions-shield]: https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=2671E5&labelColor=222222&color=2671E5
-[github-actions-url]: https://github.com/features/actions

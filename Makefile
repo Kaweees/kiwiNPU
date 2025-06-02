@@ -156,14 +156,18 @@ gl:
 	@rm -f gl/temp
 	@GL=1 make test
 
-# Openlane target: run openlane
+# OpenLane target: run OpenLane
 openlane:
 	@`which openlane` --flow Classic $(OPENLANE_CONF)
 	@cd runs && rm -f recent && ln -sf `ls | tail -n 1` recent
 
-# Openroad target: run openroad
+# OpenRoad target: run OpenRoad
 openroad:
 	@scripts/openroad_launch.sh | openroad
+# Format target: format the code
+format:
+	@echo "Formatting..."
+	@./scripts/format.sh format
 
 # Clean target: remove build artifacts and non-essential files
 clean:

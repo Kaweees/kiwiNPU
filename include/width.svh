@@ -18,4 +18,4 @@
 // Bit-width for the accumulator
 `define ACC_WIDTH (`DATA_WIDTH*2 + $clog2(`N))
 
-`endif // WIDTH_SVH
+`endif  // WIDTH_SVH

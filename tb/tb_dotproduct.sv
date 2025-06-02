@@ -8,8 +8,17 @@ module tb_dotproduct();
 
   // Declare test bench input/output signals
   logic sCLK;
-  logic signed [`DATA_WIDTH-1:0] sX[`N], sW[`N];
-  logic signed [`ACC_WIDTH-1:0] sOUT;
+  logic signed [`DATA_WIDTH - 1 : 0] sX_arr[`N], sW_arr[`N];
+  logic signed [`N * `DATA_WIDTH - 1 : 0] sX, sW;  // Packed vectors
+  logic signed [`ACC_WIDTH - 1 : 0] sOUT;
+
+  // Pack the arrays into bit vectors
+  always_comb begin
+    for (int i = 0; i < `N; i++) begin
+      sX[i*`DATA_WIDTH+:`DATA_WIDTH] = sX_arr[i];
+      sW[i*`DATA_WIDTH+:`DATA_WIDTH] = sW_arr[i];
+    end
+  end
 
   // Instantiate the DotProduct module
   DotProduct #(
@@ -36,8 +45,7 @@ module tb_dotproduct();
     for (int i = 0; i < NUM_DOT_PRODUCT_TEST; i++) begin
       // Load test vectors
       for (int j = 0; j < `N; j++) begin
-        sX[j] = dotproduct_test_x[i][j];
-        sW[j] = dotproduct_test_w[i][j];
+        sX_arr[j] = dotproduct_test_x[i][j];
       end
 
       // Wait for clock edge and check results

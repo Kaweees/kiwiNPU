@@ -10,6 +10,16 @@ module tb_perceptron();
   // Declare test bench input/output signals
   logic sCLK, sRST_N;
   logic signed [`DATA_WIDTH-1:0] sX[`N], sW[`N], sB, sY;
+  logic signed [`DATA_WIDTH - 1 : 0] sX_arr[`N], sW_arr[`N], sB, sY;
+  logic signed [`N * `DATA_WIDTH - 1 : 0] sX, sW;  // Packed vectors
+
+  // Pack the arrays into bit vectors
+  always_comb begin
+    for (int i = 0; i < `N; i++) begin
+      sX[i*`DATA_WIDTH+:`DATA_WIDTH] = sX_arr[i];
+      sW[i*`DATA_WIDTH+:`DATA_WIDTH] = sW_arr[i];
+    end
+  end
 
   // Instantiate the Perceptron module
   Perceptron #(
@@ -44,8 +54,8 @@ module tb_perceptron();
     for (int i = 0; i < NUM_PERCEPTRON_TEST; i++) begin
       // Load test vectors
       for (int j = 0; j < `N; j++) begin
-        sX[j] = perceptron_test_x[i][j];
-        sW[j] = perceptron_test_w[i][j];
+        sX_arr[j] = perceptron_test_x[i][j];
+        sW_arr[j] = perceptron_test_w[i][j];
       end
       sB = perceptron_test_b[i];
 

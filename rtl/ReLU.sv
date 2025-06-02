@@ -3,8 +3,8 @@
 module ReLU #(
   parameter int DATA_WIDTH = `DATA_WIDTH
 ) (
-  input logic signed [DATA_WIDTH-1:0] in, // Pre-activated value
-  output logic signed [DATA_WIDTH-1:0] out // Activated value
+  input  logic signed [DATA_WIDTH-1:0] in,  // Pre-activated value
+  output logic signed [DATA_WIDTH-1:0] out  // Activated value
 );
 
   // ReLU activation function: max(0, x)
