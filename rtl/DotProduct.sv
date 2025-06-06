@@ -1,9 +1,9 @@
 `include "../include/width.svh"
 
 module DotProduct #(
-  parameter int N = 4,  // Data dimensionality
+  parameter int N = `N,  // Data dimensionality
   parameter DATA_WIDTH = `DATA_WIDTH,  // Data width
-  parameter ACC_WIDTH = `ACC_WIDTH  // Accumulator width
+  parameter ACC_WIDTH = (DATA_WIDTH * 2 + $clog2(N))  // Accumulator width
 ) (
   input  logic signed [N*DATA_WIDTH-1:0] x,  // First vector (packed)
   input  logic signed [N*DATA_WIDTH-1:0] w,  // Second vector (packed)

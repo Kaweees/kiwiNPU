@@ -1,9 +1,9 @@
 `include "../include/width.svh"
 
 module Perceptron #(
-  parameter int N = 16,  // Data dimensionality
+  parameter int N = `N,  // Data dimensionality
   parameter int DATA_WIDTH = `DATA_WIDTH,  // Data width
-  parameter int ACC_WIDTH = `ACC_WIDTH  // Accumulator width
+  parameter int ACC_WIDTH = (DATA_WIDTH * 2 + $clog2(N))  // Accumulator width
 ) (
   input  logic                           clk,    // System clock
   input  logic                           rst_n,  // Asynchronous reset (active low)

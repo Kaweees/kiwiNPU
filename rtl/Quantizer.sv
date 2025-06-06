@@ -1,8 +1,9 @@
 `include "../include/width.svh"
 
 module Quantizer #(
+  parameter int N = `N,
   parameter int DATA_WIDTH = `DATA_WIDTH,
-  parameter int ACC_WIDTH  = `ACC_WIDTH
+  parameter int ACC_WIDTH = (DATA_WIDTH * 2 + $clog2(N))
 ) (
   input  logic signed [ ACC_WIDTH-1:0] in,
   output logic signed [DATA_WIDTH-1:0] out
