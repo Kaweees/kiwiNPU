@@ -12,6 +12,9 @@
 // Define N (example value, adjust as necessary)
 `define N 4
 
+// Define output dimension
+`define OUT_N 4
+
 // Define M (example value, adjust as necessary)
 `define M 4
 

@@ -102,6 +102,7 @@ all: clean install lint test
 install:
 	@echo "Generating testbenches..."
 	@uv run scripts/dotproduct_generate.py
+	@uv run scripts/layer_generate.py
 	@uv run scripts/perceptron_generate.py
 	@uv run scripts/quantizer_generate.py
 
@@ -172,9 +173,8 @@ format:
 # Clean target: remove build artifacts and non-essential files
 clean:
 	@echo "Cleaning $(TARGET)..."
-	@rm -rf $(OBJ_DIR)
-	@find $(TB_DIR) -type f -iname "*.vcd" -exec rm -rf {} +
-	@find $(TB_DIR) -type f -iname "*.log" -exec rm -rf {} +
-	@find $(TB_DIR) -type f -iname "a.out" -exec rm -rf {} +
-	@find $(TB_DIR) -type d -name "obj_dir" -exec rm -rf {} +
+	@find . -type d -name "obj_dir*" -exec rm -rf {} +
+	@find . -type f -iname "*.vcd" -exec rm -rf {} +
+	@find . -type f -iname "*.log" -exec rm -rf {} +
+	@find . -type f -iname "a.out" -exec rm -rf {} +
 	@rm -rf runs
