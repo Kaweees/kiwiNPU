@@ -24,7 +24,7 @@
 
 <!-- ABOUT THE PROJECT -->
 
-A Neural Processing Unit (NPU) accelerator ASIC designed for deep learning inference written in SystemVerilog.
+ A tapeout-ready 60 MHz Neural Processing Unit (NPU) inference accelerator developed for the [SkyWater SKY130 130 nm PDK](https://github.com/google/skywater-pdk) written in SystemVerilog.
 
 ### Built With
 
