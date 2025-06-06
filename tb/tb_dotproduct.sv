@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
-`include "../include/dotproduct_testcases.svh"
 `include "../include/width.svh"
+`include "../include/dotproduct_testcases.svh"
 
 module tb_dotproduct ();
   // Declare test bench parameters

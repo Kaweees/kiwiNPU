@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
-`include "../include/perceptron_testcases.svh"
 `include "../include/width.svh"
+`include "../include/perceptron_testcases.svh"
 
 module tb_perceptron ();
   // Declare test bench parameters
