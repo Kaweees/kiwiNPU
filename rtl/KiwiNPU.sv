@@ -94,71 +94,46 @@ module KiwiNPU #(
     return offset;
   endfunction
 
-  //--------------------------------------------------------------------------
-  // Generate one Layer instance for each layer index i = 1 .. NUM_LAYERS-1
-  //    - We declare a local signal layer_out that is exactly
-  //        [ LAYER_SIZES[i]*DATA_WIDTH-1 : 0 ]
-  //    - We slice out the correct chunk of weights_flat and biases_flat
-  //      (via weight_offset/weight_size and bias_offset/bias_size).
-  //    - On i==1, we drive in_vec directly. Otherwise, we wire in_vec_i = previous layer’s out.
-  //    - When i == NUM_LAYERS-1, we assign layer_out → top‐level out_vec.
-  //--------------------------------------------------------------------------
   generate
     for (genvar i = 1; i < NUM_LAYERS; i++) begin : gen_layers
-      // Each layer’s activation‐vector width:
-      localparam int THIS_OUT_WIDTH = LAYER_SIZES[i] * DATA_WIDTH;
+      // Per-layer vector widths
+      localparam int IN_WIDTH = LAYER_SIZES[i-1] * DATA_WIDTH;
+      localparam int OUT_WIDTH = LAYER_SIZES[i] * DATA_WIDTH;
 
-      // Declare a local signal for this layer’s output
-      logic signed [THIS_OUT_WIDTH-1 : 0] layer_out;
+      // Input vector that feeds the layer instance
+      wire signed [        IN_WIDTH-1:0] layer_in;
+      wire signed [     OUT_WIDTH-1 : 0] layer_out;
+      wire signed [weight_size(i)-1 : 0] layer_weights;
+      wire signed [  bias_size(i)-1 : 0] layer_biases;
 
-      // Extract exactly the right slice of weights_flat for layer i:
-      //   width = LAYER_SIZES[i] * LAYER_SIZES[i-1] * DATA_WIDTH,
-      //   offset = weight_offset(i).
-      wire signed [weight_size(i)-1 : 0] layer_weights = weights_flat[weight_offset(i)+:weight_size(i)];
+      assign layer_weights = weights_flat[weight_offset(i)+:weight_size(i)];
+      assign layer_biases  = biases_flat[bias_offset(i)+:bias_size(i)];
 
-      // Extract exactly the right slice of biases_flat for layer i:
-      //   width = LAYER_SIZES[i] * DATA_WIDTH,
-      //   offset = bias_offset(i).
-      wire signed [bias_size(i)-1 : 0] layer_biases = biases_flat[bias_offset(i)+:bias_size(i)];
 
-      // Instantiate Layer, using an if/else to avoid a wide‐condition “?:”
-      if (i == 1) begin
-        Layer #(
-          .IN_N      (LAYER_SIZES[i-1]),
-          .OUT_N     (LAYER_SIZES[i]),
-          .DATA_WIDTH(DATA_WIDTH),
-          .ACC_WIDTH (DATA_WIDTH * 2 + $clog2(LAYER_SIZES[i-1]))
-        ) u_layer_inst (
-          .clk    (clk),
-          .rst_n  (rst_n),
-          .in_vec (in_vec),         // top‐level input for first layer
-          .weights(layer_weights),
-          .biases (layer_biases),
-          .out_vec(layer_out)
-        );
-      end else begin
-        Layer #(
-          .IN_N      (LAYER_SIZES[i-1]),
-          .OUT_N     (LAYER_SIZES[i]),
-          .DATA_WIDTH(DATA_WIDTH),
-          .ACC_WIDTH (DATA_WIDTH * 2 + $clog2(LAYER_SIZES[i-1]))
-        ) u_layer_inst (
-          .clk    (clk),
-          .rst_n  (rst_n),
-          // “previous layer’s output” is gen_layers[i-1].layer_out
-          .in_vec (gen_layers[i-1].layer_out),
-          .weights(layer_weights),
-          .biases (layer_biases),
-          .out_vec(layer_out)
-        );
+      if (i == 1) begin  // top-level input for first layer
+        assign layer_in = in_vec;
+      end else begin  // previous layer's output
+        assign layer_in = gen_layers[i-1].layer_out;
       end
+
+      Layer #(
+        .IN_N      (LAYER_SIZES[i-1]),
+        .OUT_N     (LAYER_SIZES[i]),
+        .DATA_WIDTH(DATA_WIDTH),
+        .ACC_WIDTH (DATA_WIDTH * 2 + $clog2(LAYER_SIZES[i-1]))
+      ) u_layer_inst (
+        .clk    (clk),
+        .rst_n  (rst_n),
+        .in_vec (layer_in),
+        .weights(layer_weights),
+        .biases (layer_biases),
+        .out_vec(layer_out)
+      );
 
       // If this is the very last layer (i == NUM_LAYERS-1), drive out_vec:
       if (i == NUM_LAYERS - 1) begin
         assign out_vec = layer_out;
       end
-
-    end  // gen_layers
+    end
   endgenerate
-
 endmodule

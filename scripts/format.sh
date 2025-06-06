@@ -8,7 +8,7 @@
 #  Private Impl
 #
 
-# Default formatting style options for consistent code style
+# Default formatting style options
 FORMAT_OPTIONS=(
   # Basic formatting
   "--indentation_spaces=2"        # Use 2 spaces for indentation
@@ -26,12 +26,31 @@ FORMAT_OPTIONS=(
 )
 
 format() {
-  # Find and format all SystemVerilog files
-  # -type f: only match files
-  # -name "*.vh" -o -name "*.svh" -o -name "*.sv" -o -name "*.v": match all SystemVerilog extensions
-  # -exec: execute the command for each file found
-  find . -type f \( -name "*.vh" -o -name "*.svh" -o -name "*.sv" -o -name "*.v" \) \
-    -exec verible-verilog-format "${FORMAT_OPTIONS[@]}" --inplace {} \;
+  # Find all SystemVerilog files
+  files=$(find . -name "*.vh" -o -name "*.svh" -o -name "*.sv" -o -name "*.v")
+
+  if [ -z "$files" ]; then
+    echo "No SystemVerilog files found"
+    return 0
+  fi
+
+  # Format each file and capture any errors
+  error=0
+  # Format each file
+  for file in $files; do
+    if ! verible-verilog-format "${FORMAT_OPTIONS[@]}" --inplace "$file"; then
+      echo "Error formatting $file"
+      error=1
+    fi
+  done
+
+  if [ $error -eq 0 ]; then
+    echo "Successfully formatted all files"
+    return 0
+  else
+    echo "Errors occurred during formatting"
+    return 1
+  fi
 }
 
 # Main script logic
