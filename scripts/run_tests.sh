@@ -9,8 +9,8 @@
 #
 
 run_tests() {
-    make clean install lint
-    make test -j$(nproc)
+  make clean install lint
+  make test -j"$(nproc)"
 }
 
 # Main script logic

@@ -7,18 +7,16 @@ module KiwiNPU #(
   parameter int DATA_WIDTH = `DATA_WIDTH,
   parameter int ACC_WIDTH  = `ACC_WIDTH
 ) (
-  input  logic                                        clk,       // System clock
-  input  logic                                        rst_n,     // Asynchronous reset (active low)
+  input logic clk,  // System clock
+  input logic rst_n,  // Asynchronous reset (active low)
   // Input vector (packed bus)
-  input  logic signed [          IN_N*DATA_WIDTH-1:0] in_vec,
-  // Weights and biases for first (input->hidden) layer (packed)
-  input  logic signed [ HIDDEN_N*IN_N*DATA_WIDTH-1:0] weights1,
-  input  logic signed [      HIDDEN_N*DATA_WIDTH-1:0] biases1,
-  // Weights and biases for second (hidden->output) layer (packed)
-  input  logic signed [OUT_N*HIDDEN_N*DATA_WIDTH-1:0] weights2,
-  input  logic signed [         OUT_N*DATA_WIDTH-1:0] biases2,
+  input logic signed [IN_N*DATA_WIDTH-1:0] in_vec,  // Input vector
+  input  logic signed [HIDDEN_N*IN_N*DATA_WIDTH-1:0] weights1, // Weights for first (input->hidden) layer
+  input logic signed [HIDDEN_N*DATA_WIDTH-1:0] biases1,  // Biases for first (input->hidden) layer
+  input  logic signed [OUT_N*HIDDEN_N*DATA_WIDTH-1:0] weights2, // Weights for second (hidden->output) layer
+  input logic signed [OUT_N*DATA_WIDTH-1:0] biases2,  // Biases for second (hidden->output) layer
   // Output vector (packed bus)
-  output logic signed [         OUT_N*DATA_WIDTH-1:0] out_vec
+  output logic signed [OUT_N*DATA_WIDTH-1:0] out_vec
 );
   // Internal unpacked arrays for computation
   logic signed [         DATA_WIDTH-1:0] in_vec_arr [IN_N];

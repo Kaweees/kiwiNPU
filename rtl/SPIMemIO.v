@@ -98,7 +98,7 @@ module SPIMemIO (
   assign cfgreg_do[3:0]   = {flash_io3_di, flash_io2_di, flash_io1_di, flash_io0_di};
 
   always @(posedge clk) begin
-    softreset <= !config_en || cfgreg_we;
+    softreset <= !config_en || |cfgreg_we;
     if (!resetn) begin
       softreset    <= 1;
       config_en    <= 1;
@@ -109,7 +109,7 @@ module SPIMemIO (
       config_ddr   <= 0;
       config_qspi  <= 0;
       config_cont  <= 0;
-      config_dummy <= 8;
+      config_dummy <= 4'd8;
     end else begin
       if (cfgreg_we[0]) begin
         config_csb <= cfgreg_di[5];
@@ -172,7 +172,7 @@ module SPIMemIO (
   wire xfer_dspi = din_ddr && !din_qspi;
   wire xfer_ddr = din_ddr && din_qspi;
 
-  spimemio_xfer xfer (
+  SPIMemIO_Xfer xfer (
     .clk         (clk),
     .resetn      (xfer_resetn),
     .din_valid   (din_valid),
@@ -318,7 +318,7 @@ module SPIMemIO (
           din_data  <= config_cont ? 8'hA5 : 8'hFF;
           if (din_ready) begin
             din_rd    <= 1;
-            din_data  <= config_dummy;
+            din_data  <= {4'b0000, config_dummy};
             din_valid <= 0;
             state     <= 9;
           end
@@ -377,7 +377,7 @@ module SPIMemIO (
   end
 endmodule
 
-module spimemio_xfer (
+module SPIMemIO_Xfer (
   input clk,
   resetn,
 
@@ -473,14 +473,14 @@ module spimemio_xfer (
 
           if (flash_clk) begin
             next_obuffer = {obuffer[6:0], 1'b0};
-            next_count   = count - |count;
+            next_count   = count - {3'b000, |count};
           end else begin
             next_ibuffer = {ibuffer[6:0], flash_io1_di};
           end
 
           next_fetch = (next_count == 0);
         end
-        3'b01?: begin
+        3'b010: begin
           flash_io0_oe = !xfer_rd;
           flash_io1_oe = !xfer_rd;
           flash_io2_oe = !xfer_rd;
@@ -493,14 +493,14 @@ module spimemio_xfer (
 
           if (flash_clk) begin
             next_obuffer = {obuffer[3:0], 4'b0000};
-            next_count   = count - {|count, 2'b00};
+            next_count   = count - {2'b00, |count, 1'b0};
           end else begin
             next_ibuffer = {ibuffer[3:0], flash_io3_di, flash_io2_di, flash_io1_di, flash_io0_di};
           end
 
           next_fetch = (next_count == 0);
         end
-        3'b11?: begin
+        3'b110: begin
           flash_io0_oe = !xfer_rd;
           flash_io1_oe = !xfer_rd;
           flash_io2_oe = !xfer_rd;
@@ -513,11 +513,11 @@ module spimemio_xfer (
 
           next_obuffer = {obuffer[3:0], 4'b0000};
           next_ibuffer = {ibuffer[3:0], flash_io3_di, flash_io2_di, flash_io1_di, flash_io0_di};
-          next_count   = count - {|count, 2'b00};
+          next_count   = count - {2'b00, |count, 1'b0};
 
           next_fetch   = (next_count == 0);
         end
-        3'b??1: begin
+        3'b001, 3'b011, 3'b101, 3'b111: begin
           flash_io0_oe = !xfer_rd;
           flash_io1_oe = !xfer_rd;
 
@@ -526,12 +526,19 @@ module spimemio_xfer (
 
           if (flash_clk) begin
             next_obuffer = {obuffer[5:0], 2'b00};
-            next_count   = count - {|count, 1'b0};
+            next_count   = count - {3'b000, |count};
           end else begin
             next_ibuffer = {ibuffer[5:0], flash_io1_di, flash_io0_di};
           end
 
           next_fetch = (next_count == 0);
+        end
+        default: begin
+          // Handle any remaining cases
+          next_obuffer = obuffer;
+          next_ibuffer = ibuffer;
+          next_count   = count;
+          next_fetch   = 0;
         end
       endcase
     end
@@ -554,10 +561,10 @@ module spimemio_xfer (
     end else begin
       fetch      <= next_fetch;
       last_fetch <= xfer_ddr ? fetch : 1;
-      if (dummy_count) begin
+      if (|dummy_count) begin
         flash_clk   <= !flash_clk && !flash_csb;
-        dummy_count <= dummy_count - flash_clk;
-      end else if (count) begin
+        dummy_count <= dummy_count - {3'b000, flash_clk};
+      end else if (|count) begin
         flash_clk <= !flash_clk && !flash_csb;
         obuffer   <= next_obuffer;
         ibuffer   <= next_ibuffer;
@@ -568,7 +575,7 @@ module spimemio_xfer (
         flash_clk   <= 0;
 
         count       <= 8;
-        dummy_count <= din_rd ? din_data : 0;
+        dummy_count <= din_rd ? din_data[3:0] : 4'b0000;
         obuffer     <= din_data;
 
         xfer_tag    <= din_tag;
