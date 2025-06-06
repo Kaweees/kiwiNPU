@@ -13,7 +13,7 @@
 `define NUM_LAYERS 3
 
 // Define layer sizes
-`define LAYER_SIZES '{4, 8, 4}
+`define LAYER_SIZES {8'd4, 8'd8, 8'd4}
 
 // Define number of inputs
 `define N 4
