@@ -5,7 +5,7 @@
 module tb_perceptron ();
   // Declare test bench parameters
   localparam CLK_PERIOD = 10;  // Clock period in ns (100MHz clock)
-  localparam PIPELINE_STAGES = 3;  // Number of pipeline stages in the Perceptron
+  localparam PIPELINE_STAGES = 2;  // Number of pipeline stages in the Perceptron
 
   // Declare test bench input/output signals
   logic sCLK, sRST_N;

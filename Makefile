@@ -101,7 +101,7 @@ all: clean install lint test
 # Install target: generate testbenches
 install:
 	@echo "Generating testbenches..."
-	@uv run scripts/dotproduct_generate.py
+	@uv run scripts/preactivation_generate.py
 	@uv run scripts/layer_generate.py
 	@uv run scripts/perceptron_generate.py
 	@uv run scripts/quantizer_generate.py

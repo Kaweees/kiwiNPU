@@ -21,11 +21,11 @@ def generate(
     data_width: int = 8,
     n: int = 4,
     num_tests: int = 10,
-    output_file: str = "include/dotproduct_testcases.svh",
+    output_file: str = "include/preactivation_testcases.svh",
     seed: Optional[int] = None,
 ):
     """
-    Generate test cases for the dot product module.
+    Generate test cases for the preactivation module.
 
     data_width: Bit width of input vectors
     n: Vector dimensionality
@@ -44,7 +44,7 @@ def generate(
         np.random.seed(seed)
 
     print(
-        f"Generating {num_tests} dot product test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}"
+        f"Generating {num_tests} preactivation test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}"
     )
 
     test_cases: List[Dict[str, Any]] = []
@@ -111,25 +111,28 @@ def generate(
         )
         f.write(f"// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
 
-        f.write(f"`ifndef DOTPRODUCT_TESTCASES_SVH\n")
-        f.write(f"`define DOTPRODUCT_TESTCASES_SVH\n\n")
+        f.write(f"`ifndef PREACTIVATION_TESTCASES_SVH\n")
+        f.write(f"`define PREACTIVATION_TESTCASES_SVH\n\n")
 
-        f.write(f"localparam int NUM_DOT_PRODUCT_TEST = {len(test_cases)};\n\n")
+        f.write(f"localparam int NUM_PREACTIVATION_TEST = {len(test_cases)};\n\n")
 
         # Write test case arrays
         f.write(f"// Test vectors\n")
         f.write(
-            f"logic signed [{data_width-1}:0] dotproduct_test_x[NUM_DOT_PRODUCT_TEST][{n}];\n"
+            f"logic signed [{data_width-1}:0] preactivation_test_x[NUM_PREACTIVATION_TEST][{n}];\n"
         )
         f.write(
-            f"logic signed [{data_width-1}:0] dotproduct_test_w[NUM_DOT_PRODUCT_TEST][{n}];\n"
+            f"logic signed [{data_width-1}:0] preactivation_test_w[NUM_PREACTIVATION_TEST][{n}];\n"
         )
         f.write(
-            f"logic signed [{acc_width-1}:0] dotproduct_test_expected[NUM_DOT_PRODUCT_TEST];\n"
+            f"logic signed [{data_width-1}:0] preactivation_test_b[NUM_PREACTIVATION_TEST];\n"
+        )
+        f.write(
+            f"logic signed [{acc_width-1}:0] preactivation_test_expected[NUM_PREACTIVATION_TEST];\n"
         )
 
         f.write(f"// Initialize test cases\n")
-        f.write(f"function void init_dotproduct_test_cases();\n")
+        f.write(f"function void init_preactivation_test_cases();\n")
 
         for i, test in enumerate(test_cases):
             # Write vector A
@@ -142,10 +145,12 @@ def generate(
                     # Calculate 2's complement representation
                     hex_val = format((1 << data_width) + val, f"0{(data_width+3)//4}x")
                     f.write(
-                        f"  dotproduct_test_x[{i}][{j}] = {data_width}'h{hex_val};\n"
+                        f"  preactivation_test_x[{i}][{j}] = {data_width}'h{hex_val};\n"
                     )
                 else:
-                    f.write(f"  dotproduct_test_x[{i}][{j}] = {data_width}'d{val};\n")
+                    f.write(
+                        f"  preactivation_test_x[{i}][{j}] = {data_width}'d{val};\n"
+                    )
 
             # Write vector B
             for j in range(n):
@@ -155,25 +160,36 @@ def generate(
                     # For negative numbers, use hex format with full bit pattern
                     hex_val = format((1 << data_width) + val, f"0{(data_width+3)//4}x")
                     f.write(
-                        f"  dotproduct_test_w[{i}][{j}] = {data_width}'h{hex_val};\n"
+                        f"  preactivation_test_w[{i}][{j}] = {data_width}'h{hex_val};\n"
                     )
                 else:
-                    f.write(f"  dotproduct_test_w[{i}][{j}] = {data_width}'d{val};\n")
+                    f.write(
+                        f"  preactivation_test_w[{i}][{j}] = {data_width}'d{val};\n"
+                    )
 
-            # Write expected output
-            val = test["expected"]
-            if val < 0:
-                # For negative numbers, use hex format with full bit pattern
-                hex_val = format((1 << acc_width) + val, f"0{(acc_width+3)//4}x")
-                f.write(f"  dotproduct_test_expected[{i}] = {acc_width}'h{hex_val};\n")
+            # Add bias value generation and writing
+            b = np.random.randint(min_val, max_val + 1)  # Generate random bias
+            if b < 0:
+                hex_val = format((1 << data_width) + b, f"0{(data_width+3)//4}x")
+                f.write(f"  preactivation_test_b[{i}] = {data_width}'h{hex_val};\n")
             else:
-                f.write(f"  dotproduct_test_expected[{i}] = {acc_width}'d{val};\n")
+                f.write(f"  preactivation_test_b[{i}] = {data_width}'d{b};\n")
+
+            # Update expected output to include bias
+            val = test["expected"] + b  # Add bias to expected value
+            if val < 0:
+                hex_val = format((1 << acc_width) + val, f"0{(acc_width+3)//4}x")
+                f.write(
+                    f"  preactivation_test_expected[{i}] = {acc_width}'h{hex_val};\n"
+                )
+            else:
+                f.write(f"  preactivation_test_expected[{i}] = {acc_width}'d{val};\n")
         f.write(f"endfunction\n\n")
-        f.write(f"`endif // DOTPRODUCT_TESTCASES_SVH\n")
+        f.write(f"`endif // PREACTIVATION_TESTCASES_SVH\n")
     print(f"Successfully generated {len(test_cases)} test cases to {output_file}")
     print(f"Add the following to your testbench to use these test cases:")
     print(f'  `include "{output_file}"')
-    print(f"  // And call init_dotproduct_test_cases() in your initial block")
+    print(f"  // And call init_preactivation_test_cases() in your initial block")
 
 
 if __name__ == "__main__":

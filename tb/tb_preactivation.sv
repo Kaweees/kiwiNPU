@@ -1,15 +1,16 @@
 `timescale 1ns / 1ps
 `include "../include/width.svh"
-`include "../include/dotproduct_testcases.svh"
+`include "../include/preactivation_testcases.svh"
 
-module tb_dotproduct ();
+module tb_preactivation ();
   // Declare test bench parameters
   localparam CLK_PERIOD = 10;  // Clock period in ns (100MHz clock)
 
   // Declare test bench input/output signals
-  logic sCLK;
+  logic sCLK, sRST_N;
   logic signed [`DATA_WIDTH - 1 : 0] sX_arr[`N], sW_arr[`N];
   logic signed [`N * `DATA_WIDTH - 1 : 0] sX, sW;  // Packed vectors
+  logic signed [`DATA_WIDTH - 1 : 0] sB;
   logic signed [`ACC_WIDTH - 1 : 0] sOUT;
 
   // Pack the arrays into bit vectors
@@ -20,18 +21,24 @@ module tb_dotproduct ();
     end
   end
 
-  // Instantiate the DotProduct module
-  DotProduct #(
-    .N(`N)
+  // Instantiate the PreActivation module
+  PreActivation #(
+    .N(`N),
+    .DATA_WIDTH(`DATA_WIDTH),
+    .ACC_WIDTH(`ACC_WIDTH)
   ) DUT (
-    .x (sX),
-    .w (sW),
-    .dp(sOUT)
+    .clk  (sCLK),    // Add clock connection
+    .rst_n(sRST_N),    // Add reset connection (active low, tied high for now)
+    .x    (sX),
+    .w    (sW),
+    .b    (sB),
+    .pre  (sOUT)
   );  // Device Under Testing (DUT)
 
   // Clock generation
   initial begin
     sCLK = 1'b1;  // Start simulation with positive edge
+    sRST_N = 1'b1; // Reset is active low
     // Toggle the clock every 5 ns
     forever #(CLK_PERIOD / 2) sCLK = ~sCLK;
   end
@@ -39,24 +46,26 @@ module tb_dotproduct ();
   initial begin
     // Initialize signals
     sCLK = 1'b0;
-    init_dotproduct_test_cases();
+    sRST_N = 1'b0;
+    init_preactivation_test_cases();
 
     // Run through all test cases
-    for (int i = 0; i < NUM_DOT_PRODUCT_TEST; i++) begin
+    for (int i = 0; i < NUM_PREACTIVATION_TEST; i++) begin
       // Load test vectors
       for (int j = 0; j < `N; j++) begin
-        sX_arr[j] = dotproduct_test_x[i][j];
-        sW_arr[j] = dotproduct_test_w[i][j];
+        sX_arr[j] = preactivation_test_x[i][j];
+        sW_arr[j] = preactivation_test_w[i][j];
       end
+      sB = preactivation_test_b[i];  // Load bias
 
       // Wait for clock edge and check results
       @(posedge sCLK);
-      if (sOUT !== dotproduct_test_expected[i]) begin
+      if (sOUT !== preactivation_test_expected[i]) begin
         $error({"Test case %03d failed: Expected %0d'b%b (%03d), Got %0d'b%b ", "(%03d)"}, i,
-                 `ACC_WIDTH, dotproduct_test_expected[i], dotproduct_test_expected[i], `ACC_WIDTH,
+                 `ACC_WIDTH, preactivation_test_expected[i], preactivation_test_expected[i], `ACC_WIDTH,
                  sOUT, sOUT);
       end else begin
-        $display("Test case %03d passed: DotProduct(%0d'b%b, %0d'b%b) = %0d'b%b", i, `DATA_WIDTH,
+        $display("Test case %03d passed: PreActivation(%0d'b%b, %0d'b%b) = %0d'b%b", i, `DATA_WIDTH,
                  sX, `DATA_WIDTH, sW, `ACC_WIDTH, sOUT);
       end
     end
@@ -67,7 +76,7 @@ module tb_dotproduct ();
 
   // Waveform dump
   initial begin
-    $dumpfile("tb_dotproduct.vcd");
-    $dumpvars(0, tb_dotproduct);
+    $dumpfile("tb_preactivation.vcd");
+    $dumpvars(0, tb_preactivation);
   end
 endmodule

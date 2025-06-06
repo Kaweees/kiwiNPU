@@ -24,39 +24,37 @@ module Perceptron #(
   endgenerate
 
   // Pipeline registers for each stage
-  logic signed [ ACC_WIDTH-1:0] dp_result;  // Result from the dot product
-  logic signed [ ACC_WIDTH-1:0] sum;  // Sum of the dot product and bias
-  logic signed [DATA_WIDTH-1:0] pre;  // Pre-activation value
+  logic signed [ACC_WIDTH-1:0] pre;  // Pre-activation value
+  logic signed [DATA_WIDTH-1:0] pre_quantized;  // Quantized pre-activation value
   logic signed [DATA_WIDTH-1:0] relu_out;  // ReLU output
 
-  // Pipeline stage 1: Dot product calculation
-  DotProduct #(
+  // Pipeline stage 1: Pre-activation calculation
+  PreActivation #(
     .N         (N),
     .DATA_WIDTH(DATA_WIDTH),
     .ACC_WIDTH (ACC_WIDTH)
-  ) dot (
+  ) pre_activation (
+    .clk (clk),
+    .rst_n(rst_n),
     .x (x),
     .w (w),
-    .dp(dp_result)
+    .b (b),
+    .pre(pre)
   );
 
-  // Pipeline stage 2: Add bias to dot product result
-  assign sum = dp_result + $signed({{(ACC_WIDTH - DATA_WIDTH) {b[DATA_WIDTH-1]}}, b});
-
-  // Quantize the sum to the data width
+  // Pipeline stage 2: Quantize and apply activation function
   Quantizer #(
     .DATA_WIDTH(DATA_WIDTH),
     .ACC_WIDTH (ACC_WIDTH)
   ) quant (
-    .in (sum),
-    .out(pre)
+    .in (pre),
+    .out(pre_quantized)
   );
 
-  // Pipeline stage 3: Apply activation function
   ReLU #(
     .DATA_WIDTH(DATA_WIDTH)
   ) act (
-    .in (pre),
+    .in (pre_quantized),
     .out(relu_out)
   );
 
@@ -66,8 +64,7 @@ module Perceptron #(
       y <= '0;
     end else begin
       y <= relu_out;
-      $display("[Perceptron DEBUG] dp_result=%0d, sum=%0d, pre=%0d, relu_out=%0d, y=%0d",
-               dp_result, sum, pre, relu_out, y);
+      $display("[Perceptron DEBUG] pre=%0d, relu_out=%0d, y=%0d", pre, relu_out, y);
     end
   end
 endmodule

@@ -1,10 +1,10 @@
 `include "../include/width.svh"
 
 module Layer #(
-  parameter int IN_N = 16,  // Input vector dimensionality
-  parameter int OUT_N = 8,  // Output vector dimensionality
+  parameter int IN_N = `N,  // Input vector dimensionality
+  parameter int OUT_N = `N,  // Output vector dimensionality
   parameter int DATA_WIDTH = `DATA_WIDTH,  // Data width
-  parameter int ACC_WIDTH = (8 * 2 + $clog2(`N))  // Accumulator width
+  parameter int ACC_WIDTH = (DATA_WIDTH * 2 + $clog2(IN_N))  // Accumulator width
 ) (
   input  logic                                    clk,      // System clock
   input  logic                                    rst_n,    // Asynchronous reset (active low)
