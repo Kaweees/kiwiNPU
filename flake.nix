@@ -18,6 +18,7 @@
           pkgs.uv # Python package manager
           pkgs.verilator # Verilog simulator
           pkgs.iverilog # Verilog simulator
+          pkgs.verible # Verilog formatter and linter
           pkgs.ncurses # tput (terminal formatting)
           pkgs.findutils # find command
           pkgs.gnugrep # grep
