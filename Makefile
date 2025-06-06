@@ -100,13 +100,15 @@ all: clean install lint test
 
 # Install target: generate testbenches
 install:
-	uv run scripts/dotproduct_generate.py
-	uv run scripts/perceptron_generate.py
-	uv run scripts/quantizer_generate.py
+	@echo "Generating testbenches..."
+	@uv run scripts/dotproduct_generate.py
+	@uv run scripts/layer_generate.py
+	@uv run scripts/perceptron_generate.py
+	@uv run scripts/quantizer_generate.py
 
 # Lint target: lint the source files
 lint:
-	@printf "\n$(GREEN)$(BOLD) ----- Linting All Modules ----- $(RESET)\n"
+	@printf "\n$(GREEN)$(BOLD) ----- Linting All Modules with $(LINT) ----- $(RESET)\n"
 	@for src in $(RTL_SRCS); do \
 		top_module=$$(basename $$src .sv); \
 		top_module=$$(basename $$top_module .v); \
@@ -121,14 +123,16 @@ lint:
 
 # Test target: run the testbenches
 test:
-	@printf "\n$(GREEN)$(BOLD) ----- Running All Testbenches ----- $(RESET)\n";
+	@printf "\n$(GREEN)$(BOLD) ----- Running All Testbenches with $(SIM) ----- $(RESET)\n";
 	@mkdir -p $(OBJ_DIR)
 	@for tb in $(TB_SRCS); do \
 		top_module=$$(basename $$tb .sv); \
 		top_module=$$(basename $$top_module .v); \
 		printf "Testing $$tb . . . "; \
 		cd $(TB_DIR) && \
+		if [ ! -f $(OBJ_DIR)/V$$top_module ] || [ $$tb -nt $(OBJ_DIR)/V$$top_module ]; then \
 			$(SIM) $(SIM_FLAGS) --top-module $$top_module $(INCS) $(RTL_SRCS) $$tb > $(TB_DIR)/build_$$top_module.log 2>&1; \
+		fi; \
 		cd $(TB_DIR) && \
 		if [ -f $(OBJ_DIR)/V$$top_module ]; then \
 			{ $(OBJ_DIR)/V$$top_module > results_$$top_module.log; } 2>/dev/null || true; \
@@ -144,13 +148,6 @@ test:
 		fi; \
 	done
 
-# Print available tests
-list-tests:
-	@printf "\n$(GREEN)$(BOLD) ----- Available Tests ----- $(RESET)\n"
-	@for test in $(TB_MODULES); do \
-		printf "  $$test\n"; \
-	done
-
 # GL target: run gate level verification (GL) tests
 gl:
 	@mkdir -p gl
@@ -160,21 +157,24 @@ gl:
 	@rm -f gl/temp
 	@GL=1 make test
 
-# Openlane target: run openlane
+# OpenLane target: run OpenLane
 openlane:
 	@`which openlane` --flow Classic $(OPENLANE_CONF)
 	@cd runs && rm -f recent && ln -sf `ls | tail -n 1` recent
 
-# Openroad target: run openroad
+# OpenRoad target: run OpenRoad
 openroad:
 	@scripts/openroad_launch.sh | openroad
+# Format target: format the code
+format:
+	@echo "Formatting..."
+	@./scripts/format.sh format
 
 # Clean target: remove build artifacts and non-essential files
 clean:
 	@echo "Cleaning $(TARGET)..."
-	@rm -rf $(OBJ_DIR)
-	@rm -f `find $(TB_DIR) -iname "*.vcd"`
-	@rm -f `find $(TB_DIR) -iname "*.log"`
-	@rm -f `find $(TB_DIR) -iname "a.out"`
-	@rm -rf `find $(TB_DIR) -iname "obj_dir"`
+	@find . -type d -name "obj_dir*" -exec rm -rf {} +
+	@find . -type f -iname "*.vcd" -exec rm -rf {} +
+	@find . -type f -iname "*.log" -exec rm -rf {} +
+	@find . -type f -iname "a.out" -exec rm -rf {} +
 	@rm -rf runs

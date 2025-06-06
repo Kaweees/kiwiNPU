@@ -14,6 +14,7 @@
         openlanePkgs = [ openlane.packages.${system}.default ];
       in pkgs.mkShell {
         buildInputs = [
+          pkgs.shellcheck # Shell script linter
           pkgs.gnumake # GNU Make
           pkgs.uv # Python package manager
           pkgs.verilator # Verilog simulator

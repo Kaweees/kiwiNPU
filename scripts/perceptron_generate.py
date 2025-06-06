@@ -85,28 +85,14 @@ def generate(
 
         # Calculate dot product
         dot_product = int(np.dot(x, w))
-
-        # Add bias (with sign extension)
-        # Convert b to acc_width by sign extension if needed
-        if b < 0:
-            b_acc_width = b | ((-1) << data_width)
-        else:
-            b_acc_width = b
-
+        b_acc_width = b | ((-1) << data_width) if b < 0 else b
         acc_with_bias = dot_product + b_acc_width
 
         # Saturation (quantization)
         max_out_val = (1 << (data_width - 1)) - 1
         min_out_val = -(1 << (data_width - 1))
 
-        if acc_with_bias > max_out_val:
-            pre = max_out_val
-        elif acc_with_bias < min_out_val:
-            pre = min_out_val
-        else:
-            pre = acc_with_bias
-
-        # ReLU activation: max(0, pre)
+        pre = max(min(acc_with_bias, max_out_val), min_out_val)
         expected = max(0, pre)
 
         test_cases.append(

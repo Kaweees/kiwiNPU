@@ -7,15 +7,18 @@
 `define QUANT_INT16 16 // 16-bit integer quantization
 
 // Bit-width for quantized data (e.g. INT8)
-`define DATA_WIDTH `QUANT_INT8
+`define DATA_WIDTH 8
 
-// Define N (example value, adjust as necessary)
+// Define number of layers
+`define NUM_LAYERS 3
+
+// Define layer sizes
+`define LAYER_SIZES '{4, 8, 4}
+
+// Define number of inputs
 `define N 4
 
-// Define M (example value, adjust as necessary)
-`define M 4
-
 // Bit-width for the accumulator
-`define ACC_WIDTH (`DATA_WIDTH + `DATA_WIDTH + $clog2(`N))
+`define ACC_WIDTH (`DATA_WIDTH*2 + $clog2(`N))
 
-`endif // WIDTH_SVH
+`endif  // WIDTH_SVH
