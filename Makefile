@@ -93,18 +93,25 @@ TEST_RESET := $(shell tput sgr0)
 ## Command Section: change these variables based on your commands
 # -----------------------------------------------------------------------------
 # Targets
-.PHONY: all install lint test gl openlane clean help
+.PHONY: all generate lint test gl openlane clean help
 
 # Default target: build the program
-all: clean install lint test
+all: clean install generate lint test
 
-# Install target: generate testbenches
+# Install uv
 install:
+	@if ! command -v uv &> /dev/null; then \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
+
+# Generate testbenches
+generate:
 	@echo "Generating testbenches..."
 	@uv run scripts/preactivation_generate.py
 	@uv run scripts/layer_generate.py
 	@uv run scripts/perceptron_generate.py
 	@uv run scripts/quantizer_generate.py
+# @uv run scripts/kiwinpu_generate.py
 
 # Lint target: lint the source files
 lint:

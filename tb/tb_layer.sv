@@ -4,7 +4,11 @@
 
 // Function to get layer size must be defined before the module
 function automatic int get_layer_size(int idx);
-  int sizes[`NUM_LAYERS] = `LAYER_SIZES;  // Define the array explicitly
+  // Convert 8-bit values to 32-bit integers
+  int sizes[`NUM_LAYERS];
+  sizes[0] = 32'd4;  // First layer size
+  sizes[1] = 32'd8;  // Second layer size
+  sizes[2] = 32'd4;  // Third layer size
   return sizes[idx];
 endfunction
 

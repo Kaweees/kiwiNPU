@@ -27,8 +27,8 @@ module tb_preactivation ();
     .DATA_WIDTH(`DATA_WIDTH),
     .ACC_WIDTH(`ACC_WIDTH)
   ) DUT (
-    .clk  (sCLK),    // Add clock connection
-    .rst_n(sRST_N),    // Add reset connection (active low, tied high for now)
+    // .clk  (sCLK),    // Add clock connection
+    // .rst_n(sRST_N),    // Add reset connection (active low, tied high for now)
     .x    (sX),
     .w    (sW),
     .b    (sB),

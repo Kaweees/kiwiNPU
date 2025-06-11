@@ -5,8 +5,6 @@ module PreActivation #(
   parameter DATA_WIDTH = `DATA_WIDTH,  // Data width
   parameter ACC_WIDTH = (DATA_WIDTH * 2 + $clog2(N))  // Accumulator width
 ) (
-  input  logic                           clk,    // System clock
-  input  logic                           rst_n,  // Asynchronous reset (active low)
   input  logic signed [N*DATA_WIDTH-1:0] x,      // First vector (packed)
   input  logic signed [N*DATA_WIDTH-1:0] w,      // Second vector (packed)
   input  logic signed [  DATA_WIDTH-1:0] b,      // Bias vector
@@ -15,11 +13,11 @@ module PreActivation #(
   logic signed [DATA_WIDTH-1:0] x_arr                     [N];
   logic signed [DATA_WIDTH-1:0] w_arr                     [N];
   logic signed [ ACC_WIDTH-1:0] dp;  // Dot product result
-  genvar i;
+  genvar gi;
   generate
-    for (i = 0; i < N; i++) begin
-      assign x_arr[i] = x[i*DATA_WIDTH+:DATA_WIDTH];
-      assign w_arr[i] = w[i*DATA_WIDTH+:DATA_WIDTH];
+    for (gi = 0; gi < N; gi++) begin
+      assign x_arr[gi] = x[gi*DATA_WIDTH+:DATA_WIDTH];
+      assign w_arr[gi] = w[gi*DATA_WIDTH+:DATA_WIDTH];
     end
   endgenerate
 

@@ -34,8 +34,8 @@ module Perceptron #(
     .DATA_WIDTH(DATA_WIDTH),
     .ACC_WIDTH (ACC_WIDTH)
   ) pre_activation (
-    .clk (clk),
-    .rst_n(rst_n),
+    // .clk (clk),
+    // .rst_n(rst_n),
     .x (x),
     .w (w),
     .b (b),
