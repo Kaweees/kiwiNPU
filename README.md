@@ -36,7 +36,7 @@
 ## Preview
 
 <p align="center">
-  <img src="assets/img/demo.webm"
+  <img src="assets/img/demo.png"
   width = "80%"
   alt = "Video demonstration"
   />
