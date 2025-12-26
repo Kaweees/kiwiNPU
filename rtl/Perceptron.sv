@@ -24,7 +24,7 @@ module Perceptron #(
   endgenerate
 
   // Pipeline registers for each stage
-  logic signed [ACC_WIDTH-1:0] pre;  // Pre-activation value
+  logic signed [ ACC_WIDTH-1:0] pre;  // Pre-activation value
   logic signed [DATA_WIDTH-1:0] pre_quantized;  // Quantized pre-activation value
   logic signed [DATA_WIDTH-1:0] relu_out;  // ReLU output
 
@@ -36,9 +36,9 @@ module Perceptron #(
   ) pre_activation (
     // .clk (clk),
     // .rst_n(rst_n),
-    .x (x),
-    .w (w),
-    .b (b),
+    .x  (x),
+    .w  (w),
+    .b  (b),
     .pre(pre)
   );
 
