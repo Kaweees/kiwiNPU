@@ -7,10 +7,12 @@
 !assets/
 !assets/**/
 !.editorconfig
+!.envrc
 !.gitattributes
 !.gitignore
 !.gitkeep
 !.gitmodules
+!.justfile
 !Dockerfile
 !Makefile
 !LICENSE

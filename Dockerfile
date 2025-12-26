@@ -1,10 +1,12 @@
 FROM hpretl/iic-osic-tools
 
+# Install zsh
 USER root
-RUN mkdir /home/asic
-RUN chown 1000 /home/asic
-RUN cp -r ~/.bashrc /home/asic/ &&\
-    cat /etc/skel/.bashrc >> /home/asic/.bashrc &&\
-    echo "cd ~/workspace" >>  /home/asic/.bashrc
-ENV HOME=/home/asic
 
+# Install necessary packages
+RUN apt-get update && apt-get install -y \
+  zsh \
+  stow \
+  fzf \
+  tree \
+  && rm -rf /var/lib/apt/lists/*
