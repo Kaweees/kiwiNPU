@@ -3,6 +3,8 @@
 # run `just` from this directory to see available commands
 
 alias i := install
+alias t := test
+alias f := format
 alias c := clean
 
 # Default command when 'just' is run without arguments
@@ -11,6 +13,11 @@ default:
 
 TARGET := "asic"
 CONTAINER := "hpretl/iic-osic-tools"
+
+# Test the project
+test:
+  @echo "Testing..."
+  @uv run python -m pytest
 
 # Install the virtual environment and pre-commit hooks
 install:
@@ -29,6 +36,10 @@ install:
     --hostname $(whoami) \
     --net=host \
     {{TARGET}} -s bash -c "cd /home/$(whoami)/workspace && bash"
+
+# Format the project
+format:
+  @echo "Formatting..."
 
 # Remove build artifacts and non-essential files
 clean:

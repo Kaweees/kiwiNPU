@@ -3,9 +3,23 @@ name = "kiwinpu"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
-    "cocotb>=2.0.1",
-    "numpy>=2.3.5",
-    "torch>=2.9.1",
+  "cocotb>=2.0.1",
+  "cocotb-bus>=0.2.1",
+  "numpy>=2.3.5",
+  "pydantic>=2.12.5",
+  "pytest>=9.0.2",
+  "torch>=2.9.1",
+  "torchao>=0.14.1",
+  "tqdm>=4.67.1",
+  "typer>=0.20.0",
 ]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

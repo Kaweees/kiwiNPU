@@ -21,5 +21,5 @@ pkgs.mkShell {
   shellHook = ''
     export TMPDIR=/tmp
     just install
-    '';
+  '';
 }
