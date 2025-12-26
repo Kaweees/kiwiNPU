@@ -15,16 +15,15 @@
 </div>
 
 <a href="https://github.com/Kaweees/kiwiNPU">
-  <img alt="SystemVerilog Logo" src="assets/img/systemverilog.png" align="right" width="150">
+    <img alt="SystemVerilog Logo" src="assets/img/systemverilog.png" align="right" width="150">
 </a>
 
 <div align="left">
-  <h1><em><a href="https://kaweees.github.io/kiwiNPU">~kiwiNPU</a></em></h1>
+    <h1><em><a href="https://github.com/Kaweees/kiwiNPU">~kiwiNPU</a></em></h1>
 </div>
 
 <!-- ABOUT THE PROJECT -->
-
- A tapeout-ready 60 MHz Neural Processing Unit (NPU) inference accelerator developed for the [SkyWater SKY130 130 nm PDK](https://github.com/google/skywater-pdk) written in SystemVerilog.
+A tapeout-ready 60 MHz Neural Processing Unit (NPU) inference accelerator developed for the [SkyWater SKY130 130 nm PDK](https://github.com/google/skywater-pdk) written in SystemVerilog.
 
 ### Built With
 
@@ -36,14 +35,10 @@
 ## Preview
 
 <p align="center">
-  <img src="assets/img/demo.png"
-  width = "80%"
-  alt = "Video demonstration"
-  />
+    <img src="assets/img/demo.png" width = "80%" alt = "Chip layout" />
 </p>
 
 <!-- GETTING STARTED -->
-
 ## Getting Started
 
 ### Prerequisites
@@ -56,10 +51,10 @@ To get a local copy of the project up and running on your machine, follow these 
 
 1. Clone the project repository
 
-   ```sh
-   git clone https://github.com/Kaweees/kiwiNPU.git
-   cd kiwiNPU
-   ```
+    ```sh
+    git clone https://github.com/Kaweees/kiwiNPU.git
+    cd kiwiNPU
+    ```
 
 2. Install the project dependencies
 
@@ -69,12 +64,11 @@ To get a local copy of the project up and running on your machine, follow these 
 
 3. Run the project
 
-   ```sh
-   ./scripts/run_tests.sh
-   ```
+    ```sh
+    ./scripts/run_tests.sh
+    ```
 
 <!-- PROJECT FILE STRUCTURE -->
-
 ## Project Structure
 
 ```sh
@@ -90,7 +84,7 @@ To get a local copy of the project up and running on your machine, follow these 
 
 ## License
 
-The source code for this project is distributed under the terms of the GNU General Public License v3.0, as I firmly believe that collaborating on free and open-source software fosters innovations that mutually and equitably beneficial to both collaborators and users alike. See [`LICENSE`](./LICENSE) for details and more information.
+The source code for this project is distributed under the terms of the GNU General Public License v3.0, as I firmly believe that collaborating on free and open-source software fosters innovations that are mutually and equitably beneficial to both collaborators and users alike. See [`LICENSE`](./LICENSE) for details and more information.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->

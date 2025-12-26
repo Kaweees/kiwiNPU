@@ -1,9 +1,11 @@
 *
 
 !.github/
-!.github/**
+!.github/**/
+!.vscode/
+!.vscode/**/
 !assets/
-!assets/**
+!assets/**/
 !.editorconfig
 !.gitattributes
 !.gitignore
