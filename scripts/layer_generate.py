@@ -6,12 +6,13 @@
 # ]
 # ///
 import math
-import typer
-import random
 import os
-import numpy as np
+import random
 from pathlib import Path
-from typing import Optional, Any, List, Dict
+from typing import Any
+
+import numpy as np
+import typer
 
 app = typer.Typer()
 
@@ -23,7 +24,7 @@ def generate(
     out_n: int = 4,
     num_tests: int = 10,
     output_file: str = "include/layer_testcases.svh",
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ):
     """
     Generate test cases for the layer module.
@@ -48,7 +49,7 @@ def generate(
         f"Generating {num_tests} layer test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, OUT_N={out_n}"
     )
 
-    test_cases: List[Dict[str, Any]] = []
+    test_cases: list[dict[str, Any]] = []
 
     # Generate random test cases
     for i in range(num_tests):
@@ -101,14 +102,16 @@ def generate(
             expected = max(0, pre)
             expected_outputs.append(expected)
 
-        test_cases.append({
-            "x": x.tolist(),
-            "w": w.tolist(),
-            "b": b.tolist(),
-            "pre": pre,
-            "expected": expected_outputs,
-            "name": f"random_{i+1}",
-        })
+        test_cases.append(
+            {
+                "x": x.tolist(),
+                "w": w.tolist(),
+                "b": b.tolist(),
+                "pre": pre,
+                "expected": expected_outputs,
+                "name": f"random_{i + 1}",
+            }
+        )
 
     # Write test cases to SystemVerilog file
     output_path = Path(output_file)
@@ -116,25 +119,23 @@ def generate(
 
     with open(output_path, "w") as f:
         f.write(f"// Auto-generated test cases by {os.path.basename(__file__)}\n")
-        f.write(
-            f"// DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, OUT_N={out_n}, NUM_TESTS={num_tests}\n"
-        )
-        f.write(f"// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
+        f.write(f"// DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, OUT_N={out_n}, NUM_TESTS={num_tests}\n")
+        f.write("// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
 
-        f.write(f"`ifndef LAYER_TESTCASES_SVH\n")
-        f.write(f"`define LAYER_TESTCASES_SVH\n\n")
+        f.write("`ifndef LAYER_TESTCASES_SVH\n")
+        f.write("`define LAYER_TESTCASES_SVH\n\n")
 
         f.write(f"localparam int NUM_LAYER_TEST = {len(test_cases)};\n\n")
 
         # Write test case arrays
-        f.write(f"// Test vectors\n")
-        f.write(f"logic signed [{data_width-1}:0] layer_test_x[NUM_LAYER_TEST][{n}];\n")
-        f.write(f"logic signed [{data_width-1}:0] layer_test_w[NUM_LAYER_TEST][{n}][{out_n}];\n")
-        f.write(f"logic signed [{data_width-1}:0] layer_test_b[NUM_LAYER_TEST][{out_n}];\n")
-        f.write(f"logic signed [{data_width-1}:0] layer_test_expected[NUM_LAYER_TEST][{out_n}];\n")
+        f.write("// Test vectors\n")
+        f.write(f"logic signed [{data_width - 1}:0] layer_test_x[NUM_LAYER_TEST][{n}];\n")
+        f.write(f"logic signed [{data_width - 1}:0] layer_test_w[NUM_LAYER_TEST][{n}][{out_n}];\n")
+        f.write(f"logic signed [{data_width - 1}:0] layer_test_b[NUM_LAYER_TEST][{out_n}];\n")
+        f.write(f"logic signed [{data_width - 1}:0] layer_test_expected[NUM_LAYER_TEST][{out_n}];\n")
 
-        f.write(f"// Initialize test cases\n")
-        f.write(f"function void init_layer_test_cases();\n")
+        f.write("// Initialize test cases\n")
+        f.write("function void init_layer_test_cases();\n")
 
         for i, test in enumerate(test_cases):
             f.write(f"  // Test case {i}: {test['name']}\n")
@@ -142,49 +143,43 @@ def generate(
             # Write input vector X
             for j in range(n):
                 val = test["x"][j]
-                bin_val = format(
-                    (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
-                )
+                bin_val = format((1 << data_width) + val if val < 0 else val, f"0{data_width}b")
                 f.write(f"  layer_test_x[{i}][{j}] = {data_width}'b{bin_val};\n")
 
             # Write weight matrix W
             for j in range(n):
                 for k in range(out_n):
                     val = test["w"][j][k]
-                    bin_val = format(
-                        (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
-                    )
+                    bin_val = format((1 << data_width) + val if val < 0 else val, f"0{data_width}b")
                     f.write(f"  layer_test_w[{i}][{j}][{k}] = {data_width}'b{bin_val};\n")
 
             # Write bias vector B
             for k in range(out_n):
                 val = test["b"][k]
-                bin_val = format(
-                    (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
-                )
+                bin_val = format((1 << data_width) + val if val < 0 else val, f"0{data_width}b")
                 f.write(f"  layer_test_b[{i}][{k}] = {data_width}'b{bin_val};\n")
 
             # Write expected outputs
             for k in range(out_n):
                 val = test["expected"][k]
-                bin_val = format(
-                    (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
-                )
+                bin_val = format((1 << data_width) + val if val < 0 else val, f"0{data_width}b")
                 f.write(f"  layer_test_expected[{i}][{k}] = {data_width}'b{bin_val};\n")
 
             # Add a comment showing the computation details
             f.write(f"  // Test case {i} computation details:\n")
             for k in range(out_n):
                 dot_product = int(np.dot(test["x"], [w[k] for w in test["w"]]))
-                f.write(f"  // Output {k}: dot_product={dot_product}, pre_activation={test['pre']}, post_activation={test['expected'][k]}\n")
+                f.write(
+                    f"  // Output {k}: dot_product={dot_product}, pre_activation={test['pre']}, post_activation={test['expected'][k]}\n"
+                )
 
-        f.write(f"endfunction\n\n")
-        f.write(f"`endif // LAYER_TESTCASES_SVH\n")
+        f.write("endfunction\n\n")
+        f.write("`endif // LAYER_TESTCASES_SVH\n")
 
     print(f"Successfully generated {len(test_cases)} test cases to {output_file}")
-    print(f"Add the following to your testbench to use these test cases:")
+    print("Add the following to your testbench to use these test cases:")
     print(f'  `include "{output_file}"')
-    print(f"  // And call init_layer_test_cases() in your initial block")
+    print("  // And call init_layer_test_cases() in your initial block")
 
 
 if __name__ == "__main__":

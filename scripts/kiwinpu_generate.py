@@ -8,12 +8,13 @@
 # ]
 # ///
 import math
-import typer
-import random
 import os
-import numpy as np
+import random
 from pathlib import Path
-from typing import Optional, Any, List, Dict
+from typing import Any
+
+import numpy as np
+import typer
 from jinja2 import Template
 
 app = typer.Typer()
@@ -25,18 +26,18 @@ def generate_test_cases(
     n: int,
     out_n: int,
     num_tests: int,
-    seed: Optional[int] = None,
-) -> List[Dict[str, Any]]:
+    seed: int | None = None,
+) -> list[dict[str, Any]]:
     """Generate test cases for a module."""
     min_val: int = -(2 ** (data_width - 1))
     max_val: int = 2 ** (data_width - 1) - 1
-    acc_width: int = data_width + data_width + math.ceil(math.log2(n))
+    data_width + data_width + math.ceil(math.log2(n))
 
     if seed is not None:
         random.seed(seed)
         np.random.seed(seed)
 
-    test_cases: List[Dict[str, Any]] = []
+    test_cases: list[dict[str, Any]] = []
 
     for i in range(num_tests):
         strategy = i % 5
@@ -67,9 +68,7 @@ def generate_test_cases(
             # Edge cases
             choices = np.array([min_val, max_val])
             x = np.array([np.random.choice(choices) for _ in range(n)])
-            w = np.array(
-                [[np.random.choice(choices) for _ in range(out_n)] for _ in range(n)]
-            )
+            w = np.array([[np.random.choice(choices) for _ in range(out_n)] for _ in range(n)])
             b = np.array([np.random.choice(choices) for _ in range(out_n)])
 
         # Calculate expected outputs
@@ -93,7 +92,7 @@ def generate_test_cases(
                 "b": b.tolist(),
                 "pre": pre,
                 "expected": expected_outputs,
-                "name": f"random_{i+1}",
+                "name": f"random_{i + 1}",
             }
         )
 
@@ -101,7 +100,7 @@ def generate_test_cases(
 
 
 def write_test_cases_svh(
-    test_cases: List[Dict[str, Any]],
+    test_cases: list[dict[str, Any]],
     module_name: str,
     data_width: int,
     n: int,
@@ -180,9 +179,7 @@ endfunction
         )
 
 
-def write_testbench_sv(
-    module_name: str, data_width: int, n: int, out_n: int, output_file: str
-):
+def write_testbench_sv(module_name: str, data_width: int, n: int, out_n: int, output_file: str):
     """Write testbench SystemVerilog file."""
     template = Template(
         """`timescale 1ns / 1ps
@@ -321,11 +318,7 @@ endmodule
     output_path.parent.mkdir(exist_ok=True, parents=True)
 
     with open(output_path, "w") as f:
-        f.write(
-            template.render(
-                module_name=module_name, data_width=data_width, n=n, out_n=out_n
-            )
-        )
+        f.write(template.render(module_name=module_name, data_width=data_width, n=n, out_n=out_n))
 
 
 @app.command()
@@ -336,7 +329,7 @@ def generate(
     num_tests: int = typer.Option(10, help="Number of test cases to generate"),
     output_dir: str = typer.Option("include", help="Output directory for test cases"),
     tb_dir: str = typer.Option("tb", help="Output directory for testbench"),
-    seed: Optional[int] = typer.Option(None, help="Seed for RNG reproducibility"),
+    seed: int | None = typer.Option(None, help="Seed for RNG reproducibility"),
 ):
     """
     Generate testbench and test cases for the KiwiNPU module.

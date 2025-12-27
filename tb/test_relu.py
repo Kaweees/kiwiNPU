@@ -4,9 +4,10 @@ import os
 from pathlib import Path
 
 import cocotb
+import torch
 from cocotb.triggers import Timer
 from cocotb_tools.runner import get_runner
-import torch
+
 
 @cocotb.test()
 async def relu_test(dut):

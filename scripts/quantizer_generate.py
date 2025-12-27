@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
@@ -6,12 +7,13 @@
 # ]
 # ///
 import math
-import typer
-import random
 import os
-import numpy as np
+import random
 from pathlib import Path
-from typing import Optional, Any, List, Dict
+from typing import Any
+
+import numpy as np
+import typer
 
 app = typer.Typer()
 
@@ -22,7 +24,7 @@ def generate(
     n: int = 4,
     num_tests: int = 10,
     output_file: str = "include/quantizer_testcases.svh",
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ):
     """
     Generate test cases for the quantizer module.
@@ -45,11 +47,9 @@ def generate(
         random.seed(seed)
         np.random.seed(seed)
 
-    print(
-        f"Generating {num_tests} quantizer test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}"
-    )
+    print(f"Generating {num_tests} quantizer test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}")
 
-    test_cases: List[Dict[str, Any]] = []
+    test_cases: list[dict[str, Any]] = []
 
     # Generate random test cases
     for i in range(num_tests):
@@ -65,7 +65,7 @@ def generate(
             {
                 "input": input,
                 "output": output,
-                "name": f"random_{i+1}",
+                "name": f"random_{i + 1}",
             }
         )
 
@@ -75,27 +75,21 @@ def generate(
 
     with open(output_path, "w") as f:
         f.write(f"// Auto-generated test cases by {os.path.basename(__file__)}\n")
-        f.write(
-            f"// DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, NUM_TESTS={num_tests}\n"
-        )
-        f.write(f"// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
+        f.write(f"// DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, NUM_TESTS={num_tests}\n")
+        f.write("// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
 
-        f.write(f"`ifndef QUANTIZER_TESTCASES_SVH\n")
-        f.write(f"`define QUANTIZER_TESTCASES_SVH\n\n")
+        f.write("`ifndef QUANTIZER_TESTCASES_SVH\n")
+        f.write("`define QUANTIZER_TESTCASES_SVH\n\n")
 
         f.write(f"localparam int NUM_QUANTIZER_TEST = {len(test_cases)};\n\n")
 
         # Write test case arrays
-        f.write(f"// Test vectors\n")
-        f.write(
-            f"logic signed [{acc_width-1}:0] quantizer_test_input[NUM_QUANTIZER_TEST];\n"
-        )
-        f.write(
-            f"logic signed [{data_width-1}:0] quantizer_test_expected[NUM_QUANTIZER_TEST];\n"
-        )
+        f.write("// Test vectors\n")
+        f.write(f"logic signed [{acc_width - 1}:0] quantizer_test_input[NUM_QUANTIZER_TEST];\n")
+        f.write(f"logic signed [{data_width - 1}:0] quantizer_test_expected[NUM_QUANTIZER_TEST];\n")
 
-        f.write(f"// Initialize test cases\n")
-        f.write(f"function void init_quantizer_test_cases();\n")
+        f.write("// Initialize test cases\n")
+        f.write("function void init_quantizer_test_cases();\n")
 
         for i, test in enumerate(test_cases):
             input = test["input"]
@@ -109,21 +103,17 @@ def generate(
                 output_masked = output_sext & ((1 << data_width) - 1)
             else:
                 output_masked = output & ((1 << data_width) - 1)
-            f.write(
-                f"  quantizer_test_input[{i}] = {acc_width}'b{input_masked:0{acc_width}b};\n"
-            )
-            f.write(
-                f"  quantizer_test_expected[{i}] = {data_width}'b{output_masked:0{data_width}b};\n"
-            )
+            f.write(f"  quantizer_test_input[{i}] = {acc_width}'b{input_masked:0{acc_width}b};\n")
+            f.write(f"  quantizer_test_expected[{i}] = {data_width}'b{output_masked:0{data_width}b};\n")
             # Add a comment showing the computation details
             f.write(f"  // input={input}, output={output}\n")
 
-        f.write(f"endfunction\n\n")
-        f.write(f"`endif // QUANTIZER_TESTCASES_SVH\n")
+        f.write("endfunction\n\n")
+        f.write("`endif // QUANTIZER_TESTCASES_SVH\n")
     print(f"Successfully generated {len(test_cases)} test cases to {output_file}")
-    print(f"Add the following to your testbench to use these test cases:")
+    print("Add the following to your testbench to use these test cases:")
     print(f'  `include "{output_file}"')
-    print(f"  // And call init_quantizer_test_cases() in your initial block")
+    print("  // And call init_quantizer_test_cases() in your initial block")
 
 
 if __name__ == "__main__":

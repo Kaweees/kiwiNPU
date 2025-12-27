@@ -6,12 +6,13 @@
 # ]
 # ///
 import math
-import typer
-import random
 import os
-import numpy as np
+import random
 from pathlib import Path
-from typing import Optional, Any, List, Dict
+from typing import Any
+
+import numpy as np
+import typer
 
 app = typer.Typer()
 
@@ -22,7 +23,7 @@ def generate(
     n: int = 4,
     num_tests: int = 10,
     output_file: str = "include/perceptron_testcases.svh",
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ):
     """
     Generate test cases for the perceptron module.
@@ -42,11 +43,9 @@ def generate(
         random.seed(seed)
         np.random.seed(seed)
 
-    print(
-        f"Generating {num_tests} perceptron test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}"
-    )
+    print(f"Generating {num_tests} perceptron test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}")
 
-    test_cases: List[Dict[str, Any]] = []
+    test_cases: list[dict[str, Any]] = []
 
     # Generate random test cases
     for i in range(num_tests):
@@ -102,7 +101,7 @@ def generate(
                 "b": b,
                 "pre": pre,  # Pre-activation value
                 "expected": expected,  # Post-activation (ReLU)
-                "name": f"random_{i+1}",
+                "name": f"random_{i + 1}",
             }
         )
 
@@ -112,33 +111,23 @@ def generate(
 
     with open(output_path, "w") as f:
         f.write(f"// Auto-generated test cases by {os.path.basename(__file__)}\n")
-        f.write(
-            f"// DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, NUM_TESTS={num_tests}\n"
-        )
-        f.write(f"// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
+        f.write(f"// DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, NUM_TESTS={num_tests}\n")
+        f.write("// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
 
-        f.write(f"`ifndef PERCEPTRON_TESTCASES_SVH\n")
-        f.write(f"`define PERCEPTRON_TESTCASES_SVH\n\n")
+        f.write("`ifndef PERCEPTRON_TESTCASES_SVH\n")
+        f.write("`define PERCEPTRON_TESTCASES_SVH\n\n")
 
         f.write(f"localparam int NUM_PERCEPTRON_TEST = {len(test_cases)};\n\n")
 
         # Write test case arrays
-        f.write(f"// Test vectors\n")
-        f.write(
-            f"logic signed [{data_width-1}:0] perceptron_test_x[NUM_PERCEPTRON_TEST][{n}];\n"
-        )
-        f.write(
-            f"logic signed [{data_width-1}:0] perceptron_test_w[NUM_PERCEPTRON_TEST][{n}];\n"
-        )
-        f.write(
-            f"logic signed [{data_width-1}:0] perceptron_test_b[NUM_PERCEPTRON_TEST];\n"
-        )
-        f.write(
-            f"logic signed [{data_width-1}:0] perceptron_test_expected[NUM_PERCEPTRON_TEST];\n"
-        )
+        f.write("// Test vectors\n")
+        f.write(f"logic signed [{data_width - 1}:0] perceptron_test_x[NUM_PERCEPTRON_TEST][{n}];\n")
+        f.write(f"logic signed [{data_width - 1}:0] perceptron_test_w[NUM_PERCEPTRON_TEST][{n}];\n")
+        f.write(f"logic signed [{data_width - 1}:0] perceptron_test_b[NUM_PERCEPTRON_TEST];\n")
+        f.write(f"logic signed [{data_width - 1}:0] perceptron_test_expected[NUM_PERCEPTRON_TEST];\n")
 
-        f.write(f"// Initialize test cases\n")
-        f.write(f"function void init_perceptron_test_cases();\n")
+        f.write("// Initialize test cases\n")
+        f.write("function void init_perceptron_test_cases();\n")
 
         for i, test in enumerate(test_cases):
             f.write(f"  // Test case {i}: {test['name']}\n")
@@ -146,31 +135,23 @@ def generate(
             # Write input vector X
             for j in range(n):
                 val = test["x"][j]
-                bin_val = format(
-                    (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
-                )
+                bin_val = format((1 << data_width) + val if val < 0 else val, f"0{data_width}b")
                 f.write(f"  perceptron_test_x[{i}][{j}] = {data_width}'b{bin_val};\n")
 
             # Write weight vector W
             for j in range(n):
                 val = test["w"][j]
-                bin_val = format(
-                    (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
-                )
+                bin_val = format((1 << data_width) + val if val < 0 else val, f"0{data_width}b")
                 f.write(f"  perceptron_test_w[{i}][{j}] = {data_width}'b{bin_val};\n")
 
             # Write bias B
             val = test["b"]
-            bin_val = format(
-                (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
-            )
+            bin_val = format((1 << data_width) + val if val < 0 else val, f"0{data_width}b")
             f.write(f"  perceptron_test_b[{i}] = {data_width}'b{bin_val};\n")
 
             # Write expected output
             val = test["expected"]
-            bin_val = format(
-                (1 << data_width) + val if val < 0 else val, f"0{data_width}b"
-            )
+            bin_val = format((1 << data_width) + val if val < 0 else val, f"0{data_width}b")
             f.write(f"  perceptron_test_expected[{i}] = {data_width}'b{bin_val};\n")
 
             # Add a comment showing the computation details
@@ -178,13 +159,13 @@ def generate(
                 f"  // dot_product={int(np.dot(test['x'], test['w']))}, pre_activation={test['pre']}, post_activation={test['expected']}\n"
             )
 
-        f.write(f"endfunction\n\n")
-        f.write(f"`endif // PERCEPTRON_TESTCASES_SVH\n")
+        f.write("endfunction\n\n")
+        f.write("`endif // PERCEPTRON_TESTCASES_SVH\n")
 
     print(f"Successfully generated {len(test_cases)} test cases to {output_file}")
-    print(f"Add the following to your testbench to use these test cases:")
+    print("Add the following to your testbench to use these test cases:")
     print(f'  `include "{output_file}"')
-    print(f"  // And call init_perceptron_test_cases() in your initial block")
+    print("  // And call init_perceptron_test_cases() in your initial block")
 
 
 if __name__ == "__main__":

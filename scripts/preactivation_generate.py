@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
@@ -6,12 +7,13 @@
 # ]
 # ///
 import math
-import typer
-import random
 import os
-import numpy as np
+import random
 from pathlib import Path
-from typing import Optional, Any, List, Dict
+from typing import Any
+
+import numpy as np
+import typer
 
 app = typer.Typer()
 
@@ -22,7 +24,7 @@ def generate(
     n: int = 4,
     num_tests: int = 10,
     output_file: str = "include/preactivation_testcases.svh",
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ):
     """
     Generate test cases for the preactivation module.
@@ -43,11 +45,9 @@ def generate(
         random.seed(seed)
         np.random.seed(seed)
 
-    print(
-        f"Generating {num_tests} preactivation test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}"
-    )
+    print(f"Generating {num_tests} preactivation test cases with DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}")
 
-    test_cases: List[Dict[str, Any]] = []
+    test_cases: list[dict[str, Any]] = []
 
     # Generate random test cases
     for i in range(num_tests):
@@ -96,7 +96,7 @@ def generate(
                 "x": x.tolist(),
                 "w": w.tolist(),
                 "expected": expected,
-                "name": f"random_{i+1}",
+                "name": f"random_{i + 1}",
             }
         )
 
@@ -106,33 +106,23 @@ def generate(
 
     with open(output_path, "w") as f:
         f.write(f"// Auto-generated test cases by {os.path.basename(__file__)}\n")
-        f.write(
-            f"// DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, NUM_TESTS={num_tests}\n"
-        )
-        f.write(f"// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
+        f.write(f"// DATA_WIDTH={data_width}, ACC_WIDTH={acc_width}, N={n}, NUM_TESTS={num_tests}\n")
+        f.write("// THIS IS A HEADER FILE - DO NOT ATTEMPT TO COMPILE DIRECTLY\n\n")
 
-        f.write(f"`ifndef PREACTIVATION_TESTCASES_SVH\n")
-        f.write(f"`define PREACTIVATION_TESTCASES_SVH\n\n")
+        f.write("`ifndef PREACTIVATION_TESTCASES_SVH\n")
+        f.write("`define PREACTIVATION_TESTCASES_SVH\n\n")
 
         f.write(f"localparam int NUM_PREACTIVATION_TEST = {len(test_cases)};\n\n")
 
         # Write test case arrays
-        f.write(f"// Test vectors\n")
-        f.write(
-            f"logic signed [{data_width-1}:0] preactivation_test_x[NUM_PREACTIVATION_TEST][{n}];\n"
-        )
-        f.write(
-            f"logic signed [{data_width-1}:0] preactivation_test_w[NUM_PREACTIVATION_TEST][{n}];\n"
-        )
-        f.write(
-            f"logic signed [{data_width-1}:0] preactivation_test_b[NUM_PREACTIVATION_TEST];\n"
-        )
-        f.write(
-            f"logic signed [{acc_width-1}:0] preactivation_test_expected[NUM_PREACTIVATION_TEST];\n"
-        )
+        f.write("// Test vectors\n")
+        f.write(f"logic signed [{data_width - 1}:0] preactivation_test_x[NUM_PREACTIVATION_TEST][{n}];\n")
+        f.write(f"logic signed [{data_width - 1}:0] preactivation_test_w[NUM_PREACTIVATION_TEST][{n}];\n")
+        f.write(f"logic signed [{data_width - 1}:0] preactivation_test_b[NUM_PREACTIVATION_TEST];\n")
+        f.write(f"logic signed [{acc_width - 1}:0] preactivation_test_expected[NUM_PREACTIVATION_TEST];\n")
 
-        f.write(f"// Initialize test cases\n")
-        f.write(f"function void init_preactivation_test_cases();\n")
+        f.write("// Initialize test cases\n")
+        f.write("function void init_preactivation_test_cases();\n")
 
         for i, test in enumerate(test_cases):
             # Write vector A
@@ -143,14 +133,10 @@ def generate(
                 if val < 0:
                     # For negative numbers, use hex format with full bit pattern
                     # Calculate 2's complement representation
-                    hex_val = format((1 << data_width) + val, f"0{(data_width+3)//4}x")
-                    f.write(
-                        f"  preactivation_test_x[{i}][{j}] = {data_width}'h{hex_val};\n"
-                    )
+                    hex_val = format((1 << data_width) + val, f"0{(data_width + 3) // 4}x")
+                    f.write(f"  preactivation_test_x[{i}][{j}] = {data_width}'h{hex_val};\n")
                 else:
-                    f.write(
-                        f"  preactivation_test_x[{i}][{j}] = {data_width}'d{val};\n"
-                    )
+                    f.write(f"  preactivation_test_x[{i}][{j}] = {data_width}'d{val};\n")
 
             # Write vector B
             for j in range(n):
@@ -158,19 +144,15 @@ def generate(
                 val = test["w"][j]
                 if val < 0:
                     # For negative numbers, use hex format with full bit pattern
-                    hex_val = format((1 << data_width) + val, f"0{(data_width+3)//4}x")
-                    f.write(
-                        f"  preactivation_test_w[{i}][{j}] = {data_width}'h{hex_val};\n"
-                    )
+                    hex_val = format((1 << data_width) + val, f"0{(data_width + 3) // 4}x")
+                    f.write(f"  preactivation_test_w[{i}][{j}] = {data_width}'h{hex_val};\n")
                 else:
-                    f.write(
-                        f"  preactivation_test_w[{i}][{j}] = {data_width}'d{val};\n"
-                    )
+                    f.write(f"  preactivation_test_w[{i}][{j}] = {data_width}'d{val};\n")
 
             # Add bias value generation and writing
             b = np.random.randint(min_val, max_val + 1)  # Generate random bias
             if b < 0:
-                hex_val = format((1 << data_width) + b, f"0{(data_width+3)//4}x")
+                hex_val = format((1 << data_width) + b, f"0{(data_width + 3) // 4}x")
                 f.write(f"  preactivation_test_b[{i}] = {data_width}'h{hex_val};\n")
             else:
                 f.write(f"  preactivation_test_b[{i}] = {data_width}'d{b};\n")
@@ -178,18 +160,16 @@ def generate(
             # Update expected output to include bias
             val = test["expected"] + b  # Add bias to expected value
             if val < 0:
-                hex_val = format((1 << acc_width) + val, f"0{(acc_width+3)//4}x")
-                f.write(
-                    f"  preactivation_test_expected[{i}] = {acc_width}'h{hex_val};\n"
-                )
+                hex_val = format((1 << acc_width) + val, f"0{(acc_width + 3) // 4}x")
+                f.write(f"  preactivation_test_expected[{i}] = {acc_width}'h{hex_val};\n")
             else:
                 f.write(f"  preactivation_test_expected[{i}] = {acc_width}'d{val};\n")
-        f.write(f"endfunction\n\n")
-        f.write(f"`endif // PREACTIVATION_TESTCASES_SVH\n")
+        f.write("endfunction\n\n")
+        f.write("`endif // PREACTIVATION_TESTCASES_SVH\n")
     print(f"Successfully generated {len(test_cases)} test cases to {output_file}")
-    print(f"Add the following to your testbench to use these test cases:")
+    print("Add the following to your testbench to use these test cases:")
     print(f'  `include "{output_file}"')
-    print(f"  // And call init_preactivation_test_cases() in your initial block")
+    print("  // And call init_preactivation_test_cases() in your initial block")
 
 
 if __name__ == "__main__":
