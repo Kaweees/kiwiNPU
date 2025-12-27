@@ -9,10 +9,11 @@ import os
 from pathlib import Path
 
 import cocotb
+import torch
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
 from cocotb_tools.runner import get_runner
-import torch
+
 
 @cocotb.test()
 async def adder_test(dut):

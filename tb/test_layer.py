@@ -1,3 +1,5 @@
+"""This module contains the cocotb Python test runner used to test ``Layer``."""
+
 import math
 import os
 from pathlib import Path

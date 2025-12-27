@@ -1,3 +1,5 @@
+"""This module contains the cocotb Python test runner used to test ``ReLU``."""
+
 from __future__ import annotations
 
 import os
