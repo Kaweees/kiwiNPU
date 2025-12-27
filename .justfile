@@ -15,7 +15,7 @@ TARGET := "asic"
 CONTAINER := "hpretl/iic-osic-tools"
 
 # Test the project
-test sim="verilator":
+test sim="icarus":
   @echo "Testing..."
   @SIM={{sim}} uv run python -m pytest
 
