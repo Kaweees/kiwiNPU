@@ -8,19 +8,20 @@ import torch
 from cocotb.triggers import Timer
 from cocotb_tools.runner import get_runner
 
+N = 10  # Number of test cases
+DATA_WIDTH = 8  # Bit width of input and output
+MIN_VAL = -(1 << (DATA_WIDTH - 1))
+MAX_VAL = (1 << (DATA_WIDTH - 1)) - 1
+
 
 @cocotb.test()
 async def relu_test(dut):
     torch.manual_seed(0)
 
-    N = 10
-    DATA_WIDTH = 8
     dut._log.info(f"Test parameters: N={N}, DATA_WIDTH={DATA_WIDTH}")
 
-    # Generate random signed values in the valid range for 8-bit signed
-    min_val = -(1 << (DATA_WIDTH - 1))  # -128
-    max_val = (1 << (DATA_WIDTH - 1)) - 1  # 127
-    in_vals = torch.randint(min_val, max_val + 1, (N,), dtype=torch.int32)
+    # Generate random signed values in the valid range
+    in_vals = torch.randint(MIN_VAL, MAX_VAL + 1, (N,), dtype=torch.int32)
     out_vals = torch.relu(in_vals)
 
     # Initialize input to 0 first
@@ -31,7 +32,10 @@ async def relu_test(dut):
         dut["in"].value = int(in_vals[i].item())
         # Wait for combinational logic to settle
         await Timer(1, unit="ns")
-        assert dut["out"].value == int(out_vals[i].item())
+        assert dut["out"].value == int(out_vals[i].item()), (
+            f"Test Case {i} failed: expected={out_vals[i]}, got={dut['out'].value}"
+        )
+    dut._log.info(f"All {N} tests passed")
 
 
 def test_relu():
