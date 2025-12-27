@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 `include "../include/width.svh"
 
 module ReLU #(
@@ -9,7 +10,7 @@ module ReLU #(
 
   // ReLU activation function: max(0, x)
   always_comb begin
-    if (in[DATA_WIDTH-1]) begin
+    if ($signed(in) < 0) begin
       out = '0;
     end else begin
       out = in;

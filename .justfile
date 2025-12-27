@@ -3,16 +3,28 @@
 # run `just` from this directory to see available commands
 
 alias i := install
+alias u := update
+alias p := pre_commit
 alias t := test
 alias f := format
 alias c := clean
+
+TARGET := "asic"
+CONTAINER := "hpretl/iic-osic-tools"
 
 # Default command when 'just' is run without arguments
 default:
   @just --list -u
 
-TARGET := "asic"
-CONTAINER := "hpretl/iic-osic-tools"
+update:
+  @echo "Updating..."
+  @uv sync --upgrade
+  @uv run pre-commit autoupdate
+
+# Run pre-commit
+pre_commit:
+  @echo "Running pre-commit..."
+  @uv run pre-commit run -a
 
 # Test the project
 test sim="icarus":

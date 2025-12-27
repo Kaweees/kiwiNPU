@@ -35,6 +35,9 @@
 !*.png
 !*.nix
 !*.lock
+!*.toml
+!*.yaml
+!*.yml
 !*.svh
 !*.sv
 !*.vh

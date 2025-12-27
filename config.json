@@ -1,14 +1,14 @@
 {
-  "meta": {
-    "version": 2
-  },
-  "DESIGN_NAME": "KiwiNPU",
-  "VERILOG_FILES": "dir::rtl/*.sv",
   "CLOCK_PERIOD": 30,
   "CLOCK_PORT": "clk",
-  "FP_PDN_VOFFSET": 7,
+  "DESIGN_NAME": "KiwiNPU",
   "FP_PDN_HOFFSET": 7,
   "FP_PDN_SKIPTRIM": true,
+  "FP_PDN_VOFFSET": 7,
+  "RUN_POST_GRT_DESIGN_REPAIR": true,
   "RUN_POST_GRT_RESIZER_TIMING": true,
-  "RUN_POST_GRT_DESIGN_REPAIR": true
+  "VERILOG_FILES": "dir::rtl/*.sv",
+  "meta": {
+    "version": 2
+  }
 }

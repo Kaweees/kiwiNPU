@@ -4,26 +4,33 @@ import os
 from pathlib import Path
 
 import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import Timer
 from cocotb_tools.runner import get_runner
 import torch
 
 @cocotb.test()
 async def relu_test(dut):
-    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
-
     torch.manual_seed(0)
 
     N = 10
-    in_vals = torch.randint(0, 256, (N,), dtype=torch.int64)
+    DATA_WIDTH = 8
+    dut._log.info(f"Test parameters: N={N}, DATA_WIDTH={DATA_WIDTH}")
+
+    # Generate random signed values in the valid range for 8-bit signed
+    min_val = -(1 << (DATA_WIDTH - 1))  # -128
+    max_val = (1 << (DATA_WIDTH - 1)) - 1  # 127
+    in_vals = torch.randint(min_val, max_val + 1, (N,), dtype=torch.int32)
     out_vals = torch.relu(in_vals)
 
+    # Initialize input to 0 first
+    dut["in"].value = 0
+    await Timer(1, unit="ns")  # Wait for initial value to propagate
+
     for i in range(N):
-        dut["in"].value = int(in_vals[i])
-        await RisingEdge(dut.clk)
-        await RisingEdge(dut.clk)
-        assert dut["out"].value == int(out_vals[i])
+        dut["in"].value = int(in_vals[i].item())
+        # Wait for combinational logic to settle
+        await Timer(1, unit="ns")
+        assert dut["out"].value == int(out_vals[i].item())
 
 
 def test_relu():
