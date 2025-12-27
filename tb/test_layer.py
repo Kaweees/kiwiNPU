@@ -1,5 +1,4 @@
 import os
-import random
 from pathlib import Path
 
 import cocotb
@@ -42,17 +41,26 @@ def get_signed_value(val, width):
 def model_layer(x_vec, w_mat, b_vec):
     """
     PyTorch model of the Layer.
-    x_vec: list of N integers
-    w_mat: list of OUT_N lists of N integers (w[output_idx][input_idx])
-    b_vec: list of OUT_N integers
+    x_vec: tensor or list of N integers
+    w_mat: tensor or list of OUT_N lists of N integers (w[output_idx][input_idx])
+    b_vec: tensor or list of OUT_N integers
     """
 
-    # Convert to PyTorch tensors
-    x = torch.tensor(x_vec, dtype=torch.int32)
+    # Convert to PyTorch tensors if not already
+    if not isinstance(x_vec, torch.Tensor):
+        x = torch.tensor(x_vec, dtype=torch.int32)
+    else:
+        x = x_vec.to(torch.int32)
     # w_mat[i][j] is weight from input j to output i
     # Shape: (OUT_N, IN_N)
-    w = torch.tensor(w_mat, dtype=torch.int32)
-    b = torch.tensor(b_vec, dtype=torch.int32)
+    if not isinstance(w_mat, torch.Tensor):
+        w = torch.tensor(w_mat, dtype=torch.int32)
+    else:
+        w = w_mat.to(torch.int32)
+    if not isinstance(b_vec, torch.Tensor):
+        b = torch.tensor(b_vec, dtype=torch.int32)
+    else:
+        b = b_vec.to(torch.int32)
 
     # Linear transformation: output = x @ w.T + b
     # x: (IN_N,), w: (OUT_N, IN_N), so x @ w.T gives (OUT_N,)
@@ -92,70 +100,51 @@ async def test_layer_random(dut):
         # Generate inputs based on strategy
         if strategy == 0:
             # Completely random values
-            x_data = [random.randint(MIN_VAL, MAX_VAL) for _ in range(IN_N)]
-            w_data = [[random.randint(MIN_VAL, MAX_VAL) for _ in range(IN_N)] for _ in range(OUT_N)]
-            b_data = [random.randint(MIN_VAL, MAX_VAL) for _ in range(OUT_N)]
+            x_data = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(IN_N,), dtype=torch.int32)
+            w_data = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(OUT_N, IN_N), dtype=torch.int32)
+            b_data = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(OUT_N,), dtype=torch.int32)
 
         elif strategy == 1:
-            # Small random values, less likely to overflow
+            # Small random values, less likely to overflowoverflow
             small_min = max(MIN_VAL // 4, -32)
             small_max = min(MAX_VAL // 4, 31)
-            x_data = [random.randint(small_min, small_max) for _ in range(IN_N)]
-            w_data = [[random.randint(small_min, small_max) for _ in range(IN_N)] for _ in range(OUT_N)]
-            b_data = [random.randint(small_min, small_max) for _ in range(OUT_N)]
+            x_data = torch.randint(low=small_min, high=small_max + 1, size=(IN_N,), dtype=torch.int32)
+            w_data = torch.randint(low=small_min, high=small_max + 1, size=(OUT_N, IN_N), dtype=torch.int32)
+            b_data = torch.randint(low=small_min, high=small_max + 1, size=(OUT_N,), dtype=torch.int32)
 
         elif strategy == 2:
             # Positive/negative mix with low probability of overflow
-            x_data = [random.randint(0, MAX_VAL // 2) for _ in range(IN_N)]
-            w_data = [[random.randint(MIN_VAL // 2, 1) for _ in range(IN_N)] for _ in range(OUT_N)]
-            b_data = [random.randint(MIN_VAL // 2, MAX_VAL // 2) for _ in range(OUT_N)]
+            x_data = torch.randint(low=0, high=MAX_VAL // 2 + 1, size=(IN_N,), dtype=torch.int32)
+            w_data = torch.randint(low=MIN_VAL // 2, high=1, size=(OUT_N, IN_N), dtype=torch.int32)
+            b_data = torch.randint(low=MIN_VAL // 2, high=MAX_VAL // 2 + 1, size=(OUT_N,), dtype=torch.int32)
 
         elif strategy == 3:
             # Bias-driven tests where bias determines output
-            x_data = [0] * IN_N
-            w_data = [[0] * IN_N for _ in range(OUT_N)]
+            x_data = torch.zeros((IN_N,), dtype=torch.int32)
+            w_data = torch.zeros((OUT_N, IN_N), dtype=torch.int32)
             # Random large positive or negative bias
-            b_data = [random.choice([MIN_VAL, MAX_VAL]) for _ in range(OUT_N)]
+            b_data = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(OUT_N,), dtype=torch.int32)
 
         else:
             # Edge cases
-            choices = [MIN_VAL, MAX_VAL]
-            x_data = [random.choice(choices) for _ in range(IN_N)]
-            w_data = [[random.choice(choices) for _ in range(IN_N)] for _ in range(OUT_N)]
-            b_data = [random.choice(choices) for _ in range(OUT_N)]
+            choices = torch.tensor([MIN_VAL, MAX_VAL], dtype=torch.int32)
+            x_data = choices[torch.randint(0, 2, (IN_N,))]
+            w_data = choices[torch.randint(0, 2, (OUT_N, IN_N))]
+            b_data = choices[torch.randint(0, 2, (OUT_N,))]
 
         # Calculate expected output
         expected_y = model_layer(x_data, w_data, b_data)
 
         # Drive inputs
         # Pack x
-        dut.in_vec.value = pack_values(x_data, DATA_WIDTH)
+        dut.in_vec.value = pack_values(x_data.tolist(), DATA_WIDTH)
 
-        # Pack w
-        # SV expects flattened array where loop i (output) is outer, j (input) is inner.
-        # So sequence is w[0][0], w[0][1], ... (Wait, let's re-verify SV packing)
-        # SV: sW[(i*N+j)*DW +: DW] = sW_arr[j][i]
-        # sW_arr[j][i] is weight for input j to output i.
-        # In my python w_data[i][j], this is weight for output i from input j.
-        # So w_data[i][j] matches sW_arr[j][i].
-        # The SV packing loop:
-        # for i in OUT_N:
-        #   for j in IN_N:
-        #     index = i*N + j
-        #     val = sW_arr[j][i] (which is w_data[i][j])
-        # So the sequence in packed integer (LSB to MSB) is:
-        # w_data[0][0], w_data[0][1], ..., w_data[0][N-1], w_data[1][0], ...
-        # My pack_values takes a list and puts 1st element at LSB.
-        # So I need to flatten w_data as:
-        flat_w = []
-        for i in range(OUT_N):
-            for j in range(IN_N):
-                flat_w.append(w_data[i][j])
+        flat_w = w_data.flatten().tolist()
 
         dut.weights.value = pack_values(flat_w, DATA_WIDTH)
 
         # Pack b
-        dut.biases.value = pack_values(b_data, DATA_WIDTH)
+        dut.biases.value = pack_values(b_data.tolist(), DATA_WIDTH)
 
         # Wait for result (need 2 cycles due to registered output)
         await RisingEdge(dut.clk)
@@ -174,9 +163,9 @@ async def test_layer_random(dut):
         # Check
         if got_y != expected_y:
             dut._log.error(f"Test {t} failed!")
-            dut._log.error(f"X: {x_data}")
-            dut._log.error(f"W: {w_data}")
-            dut._log.error(f"B: {b_data}")
+            dut._log.error(f"X: {x_data.tolist()}")
+            dut._log.error(f"W: {w_data.tolist()}")
+            dut._log.error(f"B: {b_data.tolist()}")
             dut._log.error(f"Expected: {expected_y}")
             dut._log.error(f"Got:      {got_y}")
             assert False, f"Mismatch in test {t}"
