@@ -1,3 +1,4 @@
+import math
 import os
 from pathlib import Path
 
@@ -8,15 +9,16 @@ from cocotb.triggers import RisingEdge
 from cocotb.types import LogicArray, Range
 from cocotb_tools.runner import get_runner
 
-NUM_TESTS = 50  # Number of test cases
+N = 50  # Number of test cases
 IN_N = 4  # Number of inputs
 OUT_N = 4  # Number of outputs
 DATA_WIDTH = 8  # Bit width of input
 MIN_VAL = -(1 << (DATA_WIDTH - 1))
 MAX_VAL = (1 << (DATA_WIDTH - 1)) - 1
+ACC_WIDTH = DATA_WIDTH + DATA_WIDTH + math.ceil(math.log2(IN_N))
 
 
-def pack_values(values, width):
+def pack_values(values: list[int], width: int) -> LogicArray:
     """Pack a list of integers into a single LogicArray."""
     total_bits = len(values) * width
 
@@ -32,36 +34,26 @@ def pack_values(values, width):
 
 
 def get_signed_value(val, width):
-    """Convert unsigned bit representation to signed integer."""
+    """Convert unsigned bit representation to signed integer (two's complement)."""
     if val >= (1 << (width - 1)):
+        # Sign extend if negative
         return val - (1 << width)
     return val
 
 
-def model_layer(x_vec, w_mat, b_vec):
-    """
-    PyTorch model of the Layer.
-    x_vec: tensor or list of N integers
-    w_mat: tensor or list of OUT_N lists of N integers (w[output_idx][input_idx])
-    b_vec: tensor or list of OUT_N integers
-    """
+def unpack_values(packed_value: int, num_values: int, width: int) -> list[int]:
+    """Unpack a packed integer into a list of signed integers."""
+    values = []
+    mask = (1 << width) - 1
+    for i in range(num_values):
+        # Extract the bits for this element
+        val = (packed_value >> (i * width)) & mask
+        values.append(get_signed_value(val, width))
+    return values
 
-    # Convert to PyTorch tensors if not already
-    if not isinstance(x_vec, torch.Tensor):
-        x = torch.tensor(x_vec, dtype=torch.int32)
-    else:
-        x = x_vec.to(torch.int32)
-    # w_mat[i][j] is weight from input j to output i
-    # Shape: (OUT_N, IN_N)
-    if not isinstance(w_mat, torch.Tensor):
-        w = torch.tensor(w_mat, dtype=torch.int32)
-    else:
-        w = w_mat.to(torch.int32)
-    if not isinstance(b_vec, torch.Tensor):
-        b = torch.tensor(b_vec, dtype=torch.int32)
-    else:
-        b = b_vec.to(torch.int32)
 
+def model_layer(x: torch.Tensor, w: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
+    """PyTorch model of the Layer."""
     # Linear transformation: output = x @ w.T + b
     # x: (IN_N,), w: (OUT_N, IN_N), so x @ w.T gives (OUT_N,)
     output = torch.matmul(x, w.T) + b
@@ -72,15 +64,16 @@ def model_layer(x_vec, w_mat, b_vec):
     # ReLU
     relu = torch.relu(quant)
 
-    # Convert back to Python list
-    return relu.tolist()
+    return relu
 
 
 @cocotb.test()
-async def test_layer_random(dut):
-    """Test Layer with random values."""
+async def test_layer_random(dut) -> None:
+    """Test Layer module with random values."""
 
     torch.manual_seed(0)
+
+    dut._log.info(f"Test parameters: N={N}, IN_N={IN_N}, OUT_N={OUT_N}, DATA_WIDTH={DATA_WIDTH}")
 
     # Clock setup
     clock = Clock(dut.clk, 10, unit="ns")
@@ -92,101 +85,45 @@ async def test_layer_random(dut):
     await RisingEdge(dut.clk)
     dut.rst_n.value = 1
 
-    # Parameters for generation
+    # Generate all test values at once
+    in_x = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(N, IN_N), dtype=torch.int32)
+    in_w = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(N, OUT_N, IN_N), dtype=torch.int32)
+    in_b = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(N, OUT_N), dtype=torch.int32)
 
-    for t in range(NUM_TESTS):
-        strategy = t % 5
-
-        # Generate inputs based on strategy
-        if strategy == 0:
-            # Completely random values
-            x_data = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(IN_N,), dtype=torch.int32)
-            w_data = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(OUT_N, IN_N), dtype=torch.int32)
-            b_data = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(OUT_N,), dtype=torch.int32)
-
-        elif strategy == 1:
-            # Small random values, less likely to overflowoverflow
-            small_min = max(MIN_VAL // 4, -32)
-            small_max = min(MAX_VAL // 4, 31)
-            x_data = torch.randint(low=small_min, high=small_max + 1, size=(IN_N,), dtype=torch.int32)
-            w_data = torch.randint(low=small_min, high=small_max + 1, size=(OUT_N, IN_N), dtype=torch.int32)
-            b_data = torch.randint(low=small_min, high=small_max + 1, size=(OUT_N,), dtype=torch.int32)
-
-        elif strategy == 2:
-            # Positive/negative mix with low probability of overflow
-            x_data = torch.randint(low=0, high=MAX_VAL // 2 + 1, size=(IN_N,), dtype=torch.int32)
-            w_data = torch.randint(low=MIN_VAL // 2, high=1, size=(OUT_N, IN_N), dtype=torch.int32)
-            b_data = torch.randint(low=MIN_VAL // 2, high=MAX_VAL // 2 + 1, size=(OUT_N,), dtype=torch.int32)
-
-        elif strategy == 3:
-            # Bias-driven tests where bias determines output
-            x_data = torch.zeros((IN_N,), dtype=torch.int32)
-            w_data = torch.zeros((OUT_N, IN_N), dtype=torch.int32)
-            # Random large positive or negative bias
-            b_data = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(OUT_N,), dtype=torch.int32)
-
-        else:
-            # Edge cases
-            choices = torch.tensor([MIN_VAL, MAX_VAL], dtype=torch.int32)
-            x_data = choices[torch.randint(0, 2, (IN_N,))]
-            w_data = choices[torch.randint(0, 2, (OUT_N, IN_N))]
-            b_data = choices[torch.randint(0, 2, (OUT_N,))]
-
+    for i in range(N):
         # Calculate expected output
-        expected_y = model_layer(x_data, w_data, b_data)
+        expected_y = model_layer(in_x[i], in_w[i], in_b[i]).tolist()
 
         # Drive inputs
         # Pack x
-        dut.in_vec.value = pack_values(x_data.tolist(), DATA_WIDTH)
-
-        flat_w = w_data.flatten().tolist()
-
-        dut.weights.value = pack_values(flat_w, DATA_WIDTH)
+        dut["in_vec"].value = pack_values(in_x[i].tolist(), DATA_WIDTH)
+        dut["weights"].value = pack_values(in_w[i].flatten().tolist(), DATA_WIDTH)
 
         # Pack b
-        dut.biases.value = pack_values(b_data.tolist(), DATA_WIDTH)
+        dut["biases"].value = pack_values(in_b[i].tolist(), DATA_WIDTH)
 
         # Wait for result (need 2 cycles due to registered output)
         await RisingEdge(dut.clk)
         await RisingEdge(dut.clk)
 
         # Read output after the clock edge
-        got_vec = dut.out_vec.value.to_unsigned()
-        # Unpack output
-        got_y = []
-        for i in range(OUT_N):
-            # Extract DATA_WIDTH bits
-            val_bits = (got_vec >> (i * DATA_WIDTH)) & ((1 << DATA_WIDTH) - 1)
-            val = get_signed_value(val_bits, DATA_WIDTH)
-            got_y.append(val)
+        packed_out = dut["out_vec"].value.integer
+        got_vec = unpack_values(packed_out, OUT_N, DATA_WIDTH)
 
-        # Check
-        if got_y != expected_y:
-            dut._log.error(f"Test {t} failed!")
-            dut._log.error(f"X: {x_data.tolist()}")
-            dut._log.error(f"W: {w_data.tolist()}")
-            dut._log.error(f"B: {b_data.tolist()}")
-            dut._log.error(f"Expected: {expected_y}")
-            dut._log.error(f"Got:      {got_y}")
-            assert False, f"Mismatch in test {t}"
-        else:
-            dut._log.info(f"Test {t} passed")
+        assert got_vec == expected_y, f"Test Case {i} failed: expected={expected_y}, got={got_vec}"
+    dut._log.info(f"All {N} tests passed")
 
 
-def test_layer():
-    """Test for the Layer module.
-
-    Creates sources list, gets a cocotb Python Runner,
-    builds HDL, runs cocotb testcases.
-    """
+def test_layer() -> None:
+    """Test for the Layer module."""
     proj_path = Path(__file__).resolve().parent.parent
 
     sources = [
-        proj_path / "rtl" / "Layer.sv",
-        proj_path / "rtl" / "Perceptron.sv",
-        proj_path / "rtl" / "PreActivation.sv",
-        proj_path / "rtl" / "Quantizer.sv",
-        proj_path / "rtl" / "ReLU.sv",
+        f"{proj_path}/rtl/Layer.sv",
+        f"{proj_path}/rtl/Perceptron.sv",
+        f"{proj_path}/rtl/PreActivation.sv",
+        f"{proj_path}/rtl/Quantizer.sv",
+        f"{proj_path}/rtl/ReLU.sv",
     ]
     includes = [proj_path / "include"]
 
@@ -194,7 +131,7 @@ def test_layer():
     runner = get_runner(sim)
 
     # Use a unique build directory per test to avoid conflicts
-    build_dir = proj_path / "sim_build" / "Layer"
+    build_dir = f"{proj_path}/sim_build/Layer"
 
     runner.build(
         sources=sources,

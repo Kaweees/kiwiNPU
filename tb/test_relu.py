@@ -15,7 +15,9 @@ MAX_VAL = (1 << (DATA_WIDTH - 1)) - 1
 
 
 @cocotb.test()
-async def relu_test(dut):
+async def relu_test(dut) -> None:
+    """Test ReLU module with random values."""
+
     torch.manual_seed(0)
 
     dut._log.info(f"Test parameters: N={N}, DATA_WIDTH={DATA_WIDTH}")
@@ -38,22 +40,18 @@ async def relu_test(dut):
     dut._log.info(f"All {N} tests passed")
 
 
-def test_relu():
-    """Test for the ReLU module.
-
-    Creates sources list, gets a cocotb Python Runner,
-    builds HDL, runs cocotb testcases.
-    """
+def test_relu() -> None:
+    """Test for the ReLU module."""
     proj_path = Path(__file__).resolve().parent.parent
 
-    sources = [proj_path / "rtl" / "ReLU.sv"]
-    includes = [proj_path / "include"]
+    sources = [f"{proj_path}/rtl/ReLU.sv"]
+    includes = [f"{proj_path}/include"]
 
     sim = os.getenv("SIM", "icarus")
     runner = get_runner(sim)
 
     # Use a unique build directory per test to avoid conflicts
-    build_dir = proj_path / "sim_build" / "ReLU"
+    build_dir = f"{proj_path}/sim_build/ReLU"
 
     runner.build(
         sources=sources,
