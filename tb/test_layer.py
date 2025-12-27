@@ -73,19 +73,18 @@ def model_layer(x: torch.Tensor, w: torch.Tensor, b: torch.Tensor) -> torch.Tens
 async def test_layer_random(dut) -> None:
     """Test Layer module with random values."""
 
+    # Clock setup
+    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
+
     torch.manual_seed(0)
 
     dut._log.info(f"Test parameters: N={N}, IN_N={IN_N}, OUT_N={OUT_N}, DATA_WIDTH={DATA_WIDTH}")
 
-    # Clock setup
-    clock = Clock(dut.clk, 10, unit="ns")
-    cocotb.start_soon(clock.start())
-
     # Reset
-    dut.rst_n.value = 0
+    dut["rst_n"].value = 0
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
-    dut.rst_n.value = 1
+    dut["rst_n"].value = 1
 
     # Generate all test values at once
     in_x = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(N, IN_N), dtype=torch.int32)
@@ -97,18 +96,13 @@ async def test_layer_random(dut) -> None:
         expected_y = model_layer(in_x[i], in_w[i], in_b[i]).tolist()
 
         # Drive inputs
-        # Pack x
         dut["in_vec"].value = pack_values(in_x[i].tolist(), DATA_WIDTH)
         dut["weights"].value = pack_values(in_w[i].flatten().tolist(), DATA_WIDTH)
-
-        # Pack b
         dut["biases"].value = pack_values(in_b[i].tolist(), DATA_WIDTH)
 
-        # Wait for result (need 2 cycles due to registered output)
         await RisingEdge(dut.clk)
         await RisingEdge(dut.clk)
 
-        # Read output after the clock edge
         packed_out = dut["out_vec"].value.integer
         got_vec = unpack_values(packed_out, OUT_N, DATA_WIDTH)
 
@@ -135,13 +129,18 @@ def test_layer() -> None:
     # Use a unique build directory per test to avoid conflicts
     build_dir = f"{proj_path}/sim_build/Layer"
 
-    runner.build(
-        sources=sources,
-        hdl_toplevel="Layer",
-        build_dir=build_dir,
-        includes=includes,
-        waves=True,
-    )
+    build_kwargs = {
+        "sources": sources,
+        "hdl_toplevel": "Layer",
+        "build_dir": build_dir,
+        "includes": includes,
+        "waves": True,
+    }
+
+    if sim == "verilator":
+        build_kwargs["build_args"] = ["--timescale", "1ns/1ps"]
+
+    runner.build(**build_kwargs)
 
     runner.test(
         hdl_toplevel="Layer",

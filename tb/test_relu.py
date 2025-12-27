@@ -55,13 +55,18 @@ def test_relu() -> None:
     # Use a unique build directory per test to avoid conflicts
     build_dir = f"{proj_path}/sim_build/ReLU"
 
-    runner.build(
-        sources=sources,
-        hdl_toplevel="ReLU",
-        build_dir=build_dir,
-        includes=includes,
-        waves=True,
-    )
+    build_kwargs = {
+        "sources": sources,
+        "hdl_toplevel": "ReLU",
+        "build_dir": build_dir,
+        "includes": includes,
+        "waves": True,
+    }
+
+    if sim == "verilator":
+        build_kwargs["build_args"] = ["--timescale", "1ns/1ps"]
+
+    runner.build(**build_kwargs)
 
     runner.test(
         hdl_toplevel="ReLU",

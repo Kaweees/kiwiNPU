@@ -27,7 +27,7 @@ pre_commit:
   @uv run pre-commit run -a
 
 # Test the project
-test sim="icarus":
+test sim="verilator":
   @echo "Testing..."
   @SIM={{sim}} uv run python -m pytest
 
