@@ -1,9 +1,11 @@
 [project]
-name = "kiwinpu"
+name = "kiwi-npu"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
+# requires-python = ">=3.11,<3.13"
+
 dependencies = [
   "cocotb>=2.0.1",
   "cocotb-bus>=0.2.1",
@@ -15,6 +17,9 @@ dependencies = [
   "tqdm>=4.67.1",
   "typer>=0.20.0",
 ]
+
+[dependency-groups]
+dev = ["pre-commit"]
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }

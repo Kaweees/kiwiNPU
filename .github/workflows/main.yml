@@ -25,12 +25,9 @@ jobs:
         with:
           submodules: true # Fetch submodules
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
-      - name: Cache pre-commit
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
       - name: Set up the environment
         uses: ./.github/actions/setup-env
+      - name: Run checks
+        run: make
       - name: Run checks
         run: make

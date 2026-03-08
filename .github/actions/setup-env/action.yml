@@ -35,4 +35,5 @@ runs:
       with:
         version: ${{ inputs.just-version }}
     - name: Install Verilator
-      uses: v0xnihili/install-verilator-action@main
+      uses: veryl-lang/setup-verilator@v1
+
