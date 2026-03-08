@@ -9,7 +9,6 @@ requires-python = ">=3.12"
 dependencies = [
   "cocotb>=2.0.1",
   "cocotb-bus>=0.2.1",
-  "numpy>=2.3.5",
   "pydantic>=2.12.5",
   "pytest>=9.0.2",
   "torch>=2.9.1",

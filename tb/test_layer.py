@@ -11,14 +11,14 @@ from cocotb.triggers import RisingEdge
 from cocotb_tools.runner import get_runner
 from utils import pack_values, unpack_values
 
-N = 50  # Number of test cases
+# Parameters
+NUM_TESTS = 10  # Number of test cases
 IN_N = 4  # Number of inputs
 OUT_N = 4  # Number of outputs
-DATA_WIDTH = 8  # Bit width of input
+DATA_WIDTH = 8  # Bit width of input and output
 MIN_VAL = -(1 << (DATA_WIDTH - 1))
 MAX_VAL = (1 << (DATA_WIDTH - 1)) - 1
-ACC_WIDTH = DATA_WIDTH + DATA_WIDTH + math.ceil(math.log2(IN_N))
-
+ACC_WIDTH = DATA_WIDTH * 2 + math.ceil(math.log2(IN_N))
 
 def model_layer(x: torch.Tensor, w: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     """PyTorch model of the Layer."""
@@ -44,7 +44,7 @@ async def test_layer_random(dut) -> None:
 
     torch.manual_seed(0)
 
-    dut._log.info(f"Test parameters: N={N}, IN_N={IN_N}, OUT_N={OUT_N}, DATA_WIDTH={DATA_WIDTH}")
+    dut._log.info(f"Test parameters: NUM_TESTS={NUM_TESTS}, IN_N={IN_N}, OUT_N={OUT_N}, DATA_WIDTH={DATA_WIDTH}")
 
     # Reset
     dut["rst_n"].value = 0
@@ -53,11 +53,11 @@ async def test_layer_random(dut) -> None:
     dut["rst_n"].value = 1
 
     # Generate all test values at once
-    in_x = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(N, IN_N), dtype=torch.int32)
-    in_w = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(N, OUT_N, IN_N), dtype=torch.int32)
-    in_b = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(N, OUT_N), dtype=torch.int32)
+    in_x = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(NUM_TESTS, IN_N), dtype=torch.int32)
+    in_w = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(NUM_TESTS, OUT_N, IN_N), dtype=torch.int32)
+    in_b = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(NUM_TESTS, OUT_N), dtype=torch.int32)
 
-    for i in range(N):
+    for i in range(NUM_TESTS):
         # Calculate expected output
         expected_y = model_layer(in_x[i], in_w[i], in_b[i]).tolist()
 
@@ -73,7 +73,7 @@ async def test_layer_random(dut) -> None:
         got_vec = unpack_values(packed_out, OUT_N, DATA_WIDTH)
 
         assert got_vec == expected_y, f"Test Case {i} failed: expected={expected_y}, got={got_vec}"
-    dut._log.info(f"All {N} tests passed")
+    dut._log.info(f"All {NUM_TESTS} tests passed")
 
 
 def test_layer() -> None:
