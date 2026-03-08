@@ -40,7 +40,7 @@ async def test_layer_random(dut) -> None:
     """Test Layer module with random values."""
 
     # Clock setup
-    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
+    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
 
     torch.manual_seed(0)
 
@@ -110,7 +110,8 @@ def test_layer() -> None:
 
     runner.test(
         hdl_toplevel="Layer",
-        test_module="tb.test_layer",
+        test_module="test_layer",
+        test_dir=f"{proj_path}/tb",
         build_dir=build_dir,
         waves=True,
     )

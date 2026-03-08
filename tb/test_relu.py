@@ -1,7 +1,5 @@
 """This module contains the cocotb Python test runner used to test ``ReLU``."""
 
-from __future__ import annotations
-
 import os
 from pathlib import Path
 
@@ -70,7 +68,8 @@ def test_relu() -> None:
 
     runner.test(
         hdl_toplevel="ReLU",
-        test_module="tb.test_relu",
+        test_module="test_relu",
+        test_dir=f"{proj_path}/tb",
         build_dir=build_dir,
         waves=True,
     )

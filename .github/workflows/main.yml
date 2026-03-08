@@ -28,6 +28,4 @@ jobs:
       - name: Set up the environment
         uses: ./.github/actions/setup-env
       - name: Run checks
-        run: make
-      - name: Run checks
-        run: make
+        run: SIM=verilator uv run python -m pytest

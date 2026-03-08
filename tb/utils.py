@@ -1,5 +1,6 @@
 from cocotb.types import LogicArray, Range
 
+
 def pack_values(values: list[int], width: int) -> LogicArray:
     """Pack a list of integers into a single LogicArray."""
     total_bits = len(values) * width

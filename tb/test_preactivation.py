@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import math
 import os
 from pathlib import Path
@@ -213,7 +211,8 @@ def test_preactivation():
 
     runner.test(
         hdl_toplevel="PreActivation",
-        test_module="tb.test_preactivation",
+        test_module="test_preactivation",
+        test_dir=f"{proj_path}/tb",
         build_dir=build_dir,
         waves=True,
     )
