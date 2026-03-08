@@ -4,7 +4,7 @@ module Layer #(
   parameter int IN_N = `N,  // Input vector dimensionality
   parameter int OUT_N = `N,  // Output vector dimensionality
   parameter int DATA_WIDTH = `DATA_WIDTH,  // Data width
-  parameter int ACC_WIDTH = (DATA_WIDTH * 2 + $clog2(IN_N))  // Accumulator width
+  parameter int ACC_WIDTH = `ACC_WIDTH  // Accumulator width
 ) (
   input  logic                                    clk,      // System clock
   input  logic                                    rst_n,    // Asynchronous reset (active low)

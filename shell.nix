@@ -3,16 +3,16 @@
 }:
 
 pkgs.mkShell {
-  buildInputs = [
-    pkgs.gnumake # GNU Make
-    pkgs.just # Just
-    pkgs.verilator # Verilog simulator
-    pkgs.iverilog # Verilog simulator
-    pkgs.verible # Verilog formatter and linter
-    pkgs.gtkwave # GTKWave waveform viewer
-    pkgs.openfpgaloader # openFPGALoader
-    pkgs.docker
-    pkgs.xhost # X server
+  buildInputs = with pkgs; [
+    gnumake # GNU Make
+    just # Just
+    verilator # Verilog simulator
+    iverilog # Verilog simulator
+    verible # Verilog formatter and linter
+    gtkwave # GTKWave waveform viewer
+    openfpgaloader # openFPGALoader
+    docker
+    xhost # X server
   ];
 
   # Shell hook to set up environment

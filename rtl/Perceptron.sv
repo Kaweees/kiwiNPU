@@ -3,7 +3,7 @@
 module Perceptron #(
   parameter int N = `N,  // Data dimensionality
   parameter int DATA_WIDTH = `DATA_WIDTH,  // Data width
-  parameter int ACC_WIDTH = (DATA_WIDTH * 2 + $clog2(N))  // Accumulator width
+  parameter int ACC_WIDTH = `ACC_WIDTH  // Accumulator width
 ) (
   input  logic                           clk,    // System clock
   input  logic                           rst_n,  // Asynchronous reset (active low)
@@ -25,7 +25,7 @@ module Perceptron #(
 
   // Pipeline registers for each stage
   logic signed [ ACC_WIDTH-1:0] pre;  // Pre-activation value
-  logic signed [DATA_WIDTH-1:0] pre_quantized;  // Quantized pre-activation value
+  logic signed [DATA_WIDTH-1:0] pre_clamped;  // Clamped pre-activation value
   logic signed [DATA_WIDTH-1:0] relu_out;  // ReLU output
 
   // Pipeline stage 1: Pre-activation calculation
@@ -34,27 +34,25 @@ module Perceptron #(
     .DATA_WIDTH(DATA_WIDTH),
     .ACC_WIDTH (ACC_WIDTH)
   ) pre_activation (
-    // .clk (clk),
-    // .rst_n(rst_n),
     .x  (x),
     .w  (w),
     .b  (b),
     .pre(pre)
   );
 
-  // Pipeline stage 2: Quantize and apply activation function
-  Quantizer #(
+  // Pipeline stage 2: Clamp and apply activation function
+  Clamper #(
     .DATA_WIDTH(DATA_WIDTH),
     .ACC_WIDTH (ACC_WIDTH)
-  ) quant (
+  ) clamp (
     .in (pre),
-    .out(pre_quantized)
+    .out(pre_clamped)
   );
 
   ReLU #(
     .DATA_WIDTH(DATA_WIDTH)
   ) act (
-    .in (pre_quantized),
+    .in (pre_clamped),
     .out(relu_out)
   );
 
@@ -64,7 +62,6 @@ module Perceptron #(
       y <= '0;
     end else begin
       y <= relu_out;
-      $display("[Perceptron DEBUG] pre=%0d, relu_out=%0d, y=%0d", pre, relu_out, y);
     end
   end
 endmodule

@@ -20,17 +20,18 @@ MIN_VAL = -(1 << (DATA_WIDTH - 1))
 MAX_VAL = (1 << (DATA_WIDTH - 1)) - 1
 ACC_WIDTH = DATA_WIDTH * 2 + math.ceil(math.log2(IN_N))
 
+
 def model_layer(x: torch.Tensor, w: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     """PyTorch model of the Layer."""
     # Linear transformation: output = x @ w.T + b
     # x: (IN_N,), w: (OUT_N, IN_N), so x @ w.T gives (OUT_N,)
     output = torch.matmul(x, w.T) + b
 
-    # Quantizer: clamp to signed data_width-bit range
-    quant = torch.clamp(output, MIN_VAL, MAX_VAL)
+    # Clamper: saturate to signed DATA_WIDTH-bit range
+    clamped = torch.clamp(output, MIN_VAL, MAX_VAL)
 
     # ReLU
-    relu = torch.relu(quant)
+    relu = torch.relu(clamped)
 
     return relu
 
@@ -44,7 +45,7 @@ async def test_layer_random(dut) -> None:
 
     torch.manual_seed(0)
 
-    dut._log.info(f"Test parameters: NUM_TESTS={NUM_TESTS}, IN_N={IN_N}, OUT_N={OUT_N}, DATA_WIDTH={DATA_WIDTH}")
+    dut._log.info(f"Test parameters: {NUM_TESTS=}, {IN_N=}, {OUT_N=}, {DATA_WIDTH=}")
 
     # Reset
     dut["rst_n"].value = 0
@@ -84,7 +85,7 @@ def test_layer() -> None:
         f"{proj_path}/rtl/Layer.sv",
         f"{proj_path}/rtl/Perceptron.sv",
         f"{proj_path}/rtl/PreActivation.sv",
-        f"{proj_path}/rtl/Quantizer.sv",
+        f"{proj_path}/rtl/Clamper.sv",
         f"{proj_path}/rtl/ReLU.sv",
     ]
     includes = [proj_path / "include"]

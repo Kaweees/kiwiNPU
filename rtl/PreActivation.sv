@@ -3,7 +3,7 @@
 module PreActivation #(
   parameter int N = `N,  // Data dimensionality
   parameter DATA_WIDTH = `DATA_WIDTH,  // Data width
-  parameter ACC_WIDTH = (DATA_WIDTH * 2 + $clog2(N))  // Accumulator width
+  parameter int ACC_WIDTH = `ACC_WIDTH  // Accumulator width
 ) (
   input  logic signed [N*DATA_WIDTH-1:0] x,   // First vector (packed)
   input  logic signed [N*DATA_WIDTH-1:0] w,   // Second vector (packed)
@@ -25,8 +25,6 @@ module PreActivation #(
     dp = '0;
     for (int i = 0; i < N; i++) begin
       dp += x_arr[i] * w_arr[i];
-      $display("[PreActivation DEBUG] x[%0d]=%0d, w[%0d]=%0d, b=%0d, dp=%0d", i, x_arr[i], i,
-               w_arr[i], b, dp);
     end
     pre = dp + {{(ACC_WIDTH-DATA_WIDTH){b[DATA_WIDTH-1]}}, b};  // Add sign-extended bias to dot product
   end

@@ -21,7 +21,7 @@ async def relu_test(dut) -> None:
 
     torch.manual_seed(42)
 
-    dut._log.info(f"Test parameters: NUM_TESTS={NUM_TESTS}, DATA_WIDTH={DATA_WIDTH}")
+    dut._log.info(f"Test parameters: {NUM_TESTS=}, {DATA_WIDTH=}")
 
     # Generate random signed values in the valid range
     in_vals = torch.randint(MIN_VAL, MAX_VAL + 1, (NUM_TESTS,), dtype=torch.int32)

@@ -29,10 +29,10 @@ runs:
       with:
         version: ${{ inputs.uv-version }}
         enable-cache: "true"
-        cache-suffix: ${{ matrix.python-version }}
+        cache-suffix: ${{ inputs.python-version }}
     - name: Setup just
       uses: extractions/setup-just@v2
       with:
-        version: ${{ inputs.just-version }}
+        just-version: ${{ inputs.just-version }}
     - name: Install Verilator
       uses: veryl-lang/setup-verilator@v1

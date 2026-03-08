@@ -30,7 +30,7 @@ async def preactivation_test(dut):
 
     torch.manual_seed(42)
 
-    dut._log.info(f"Test parameters: NUM_TESTS={NUM_TESTS}, N={N}, DATA_WIDTH={DATA_WIDTH}, ACC_WIDTH={ACC_WIDTH}")
+    dut._log.info(f"Test parameters: {NUM_TESTS=}, {N=}, {DATA_WIDTH=}, {ACC_WIDTH=}")
 
     # Generate all test inputs at once
     in_x = torch.randint(MIN_VAL, MAX_VAL + 1, (NUM_TESTS, N), dtype=torch.int32)
