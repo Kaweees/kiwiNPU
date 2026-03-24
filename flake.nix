@@ -33,12 +33,20 @@
           packages = [
             ll.librelane
             pkgs.python3
-            pkgs.gtkwave
-            pkgs.git
             pkgs.gnumake
+            pkgs.just
+            pkgs.verilator
+            pkgs.iverilog
+            pkgs.verible
+            pkgs.gtkwave
+            pkgs.openfpgaloader
+            pkgs.docker
+            pkgs.xhost
+            pkgs.git
           ];
 
           shellHook = ''
+            export TMPDIR=/tmp
             export PDK_ROOT="''${PDK_ROOT:-$HOME/.ciel}"
             echo "LibreLane ready — PDK_ROOT=$PDK_ROOT"
           '';

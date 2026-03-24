@@ -69,7 +69,7 @@ To get a local copy of the project up and running on your machine, follow these 
     ```
 
     ```sh
-    uv run librelane config.json
+    librelane config.json
     ```
 
 <!-- PROJECT FILE STRUCTURE -->
