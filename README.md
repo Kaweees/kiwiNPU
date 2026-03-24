@@ -65,7 +65,11 @@ To get a local copy of the project up and running on your machine, follow these 
 3. Run the project
 
     ```sh
-    ./scripts/run_tests.sh
+    just test
+    ```
+
+    ```sh
+    uv run librelane config.json
     ```
 
 <!-- PROJECT FILE STRUCTURE -->
