@@ -1,0 +1,5 @@
+runs/
+sim_build/
+.venv/
+__pycache__/
+*.vcd

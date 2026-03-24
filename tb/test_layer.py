@@ -38,7 +38,7 @@ def model_layer(x: torch.Tensor, w: torch.Tensor, b: torch.Tensor) -> torch.Tens
 
 @cocotb.test()
 async def test_layer_random(dut) -> None:
-    """Test Layer module with random values."""
+    """Test Layer module."""
 
     # Clock setup
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
@@ -53,27 +53,34 @@ async def test_layer_random(dut) -> None:
     await RisingEdge(dut.clk)
     dut["rst_n"].value = 1
 
+    PIPELINE_DEPTH = 3  # 3-stage pipeline latency
+
     # Generate all test values at once
     in_x = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(NUM_TESTS, IN_N), dtype=torch.int32)
     in_w = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(NUM_TESTS, OUT_N, IN_N), dtype=torch.int32)
     in_b = torch.randint(low=MIN_VAL, high=MAX_VAL + 1, size=(NUM_TESTS, OUT_N), dtype=torch.int32)
 
-    for i in range(NUM_TESTS):
-        # Calculate expected output
-        expected_y = model_layer(in_x[i], in_w[i], in_b[i]).tolist()
+    # Pre-compute expected results
+    expected = [model_layer(in_x[i], in_w[i], in_b[i]).tolist() for i in range(NUM_TESTS)]
 
-        # Drive inputs
-        dut["in_vec"].value = pack_values(in_x[i].tolist(), DATA_WIDTH)
-        dut["weights"].value = pack_values(in_w[i].flatten().tolist(), DATA_WIDTH)
-        dut["biases"].value = pack_values(in_b[i].tolist(), DATA_WIDTH)
+    # Drive all inputs and collect outputs with pipeline latency
+    for i in range(NUM_TESTS + PIPELINE_DEPTH):
+        # Drive new inputs into the pipeline
+        if i < NUM_TESTS:
+            dut["in_vec"].value = pack_values(in_x[i].tolist(), DATA_WIDTH)
+            dut["weights"].value = pack_values(in_w[i].flatten().tolist(), DATA_WIDTH)
+            dut["biases"].value = pack_values(in_b[i].tolist(), DATA_WIDTH)
 
         await RisingEdge(dut.clk)
-        await RisingEdge(dut.clk)
 
-        packed_out = dut["out_vec"].value
-        got_vec = unpack_values(packed_out, OUT_N, DATA_WIDTH)
+        # Check outputs that have emerged from the pipeline
+        if i >= PIPELINE_DEPTH:
+            j = i - PIPELINE_DEPTH
+            packed_out = dut["out_vec"].value
+            got_vec = unpack_values(packed_out, OUT_N, DATA_WIDTH)
+            assert got_vec == expected[j], f"Test Case {j} failed: expected={expected[j]}, got={got_vec}"
+            dut._log.info(f"Test Case {j} passed")
 
-        assert got_vec == expected_y, f"Test Case {i} failed: expected={expected_y}, got={got_vec}"
     dut._log.info(f"All {NUM_TESTS} tests passed")
 
 
@@ -112,9 +119,10 @@ def test_layer() -> None:
     runner.test(
         hdl_toplevel="Layer",
         test_module="test_layer",
-        test_dir=f"{proj_path}/tb",
+        test_dir=build_dir,
         build_dir=build_dir,
         waves=True,
+        extra_env={"PYTHONPATH": f"{proj_path}/tb"},
     )
 
 

@@ -26,7 +26,7 @@ def model_preactivation(x_vec: torch.Tensor, w_vec: torch.Tensor, b: int) -> int
 
 @cocotb.test()
 async def preactivation_test(dut):
-    """Test PreActivation module with generated test cases."""
+    """Test PreActivation module."""
 
     torch.manual_seed(42)
 
@@ -95,9 +95,10 @@ def test_preactivation():
     runner.test(
         hdl_toplevel="PreActivation",
         test_module="test_preactivation",
-        test_dir=f"{proj_path}/tb",
+        test_dir=build_dir,
         build_dir=build_dir,
         waves=True,
+        extra_env={"PYTHONPATH": f"{proj_path}/tb"},
     )
 
 

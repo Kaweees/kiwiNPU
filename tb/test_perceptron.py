@@ -31,7 +31,7 @@ def model_perceptron(x_vec: torch.Tensor, w_vec: torch.Tensor, b: int) -> int:
 
 @cocotb.test()
 async def perceptron_test(dut) -> None:
-    """Test Perceptron module with random values."""
+    """Test Perceptron module."""
 
     # Clock setup
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
@@ -46,30 +46,35 @@ async def perceptron_test(dut) -> None:
     await RisingEdge(dut.clk)
     dut.rst_n.value = 1
 
+    PIPELINE_DEPTH = 3  # 3-stage pipeline latency
+
     # Generate all test inputs at once
     in_x = torch.randint(MIN_VAL, MAX_VAL + 1, (NUM_TESTS, N), dtype=torch.int32)
     in_w = torch.randint(MIN_VAL, MAX_VAL + 1, (NUM_TESTS, N), dtype=torch.int32)
     in_b = torch.randint(MIN_VAL, MAX_VAL + 1, (NUM_TESTS,), dtype=torch.int32)
 
-    for i in range(NUM_TESTS):
-        x_list = in_x[i].tolist()
-        w_list = in_w[i].tolist()
-        b_val = int(in_b[i].item())
-        expected = model_perceptron(in_x[i], in_w[i], b_val)
+    # Pre-compute expected results
+    expected = [model_perceptron(in_x[i], in_w[i], int(in_b[i].item())) for i in range(NUM_TESTS)]
 
-        dut.x.value = pack_values(x_list, DATA_WIDTH)
-        dut.w.value = pack_values(w_list, DATA_WIDTH)
-        dut.b.value = b_val
+    # Drive all inputs and collect outputs with pipeline latency
+    for i in range(NUM_TESTS + PIPELINE_DEPTH):
+        # Drive new inputs into the pipeline
+        if i < NUM_TESTS:
+            dut.x.value = pack_values(in_x[i].tolist(), DATA_WIDTH)
+            dut.w.value = pack_values(in_w[i].tolist(), DATA_WIDTH)
+            dut.b.value = int(in_b[i].item())
 
         await RisingEdge(dut.clk)
-        await RisingEdge(dut.clk)
 
-        got = get_signed_value(dut.y.value.to_unsigned(), DATA_WIDTH)
-
-        assert got == expected, (
-            f"Test Case {i} failed: x={x_list}, w={w_list}, b={b_val}, expected={expected}, got={got}"
-        )
-        dut._log.info(f"Test Case {i} passed: Perceptron({x_list}, {w_list}, {b_val}) = {got}")
+        # Check outputs that have emerged from the pipeline
+        if i >= PIPELINE_DEPTH:
+            j = i - PIPELINE_DEPTH
+            got = get_signed_value(dut.y.value.to_unsigned(), DATA_WIDTH)
+            assert got == expected[j], (
+                f"Test Case {j} failed: x={in_x[j].tolist()}, w={in_w[j].tolist()}, "
+                f"b={int(in_b[j].item())}, expected={expected[j]}, got={got}"
+            )
+            dut._log.info(f"Test Case {j} passed: Perceptron(...) = {got}")
 
     dut._log.info(f"All {NUM_TESTS} tests passed")
 
@@ -108,9 +113,10 @@ def test_perceptron() -> None:
     runner.test(
         hdl_toplevel="Perceptron",
         test_module="test_perceptron",
-        test_dir=f"{proj_path}/tb",
+        test_dir=build_dir,
         build_dir=build_dir,
         waves=True,
+        extra_env={"PYTHONPATH": f"{proj_path}/tb"},
     )
 
 

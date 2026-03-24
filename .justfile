@@ -52,6 +52,7 @@ install:
 # Format the project
 format:
   @echo "Formatting..."
+  scripts/format.sh format
 
 # Remove build artifacts and non-essential files
 clean:
@@ -63,5 +64,6 @@ clean:
   @find . -type d -name "obj_dir*" -exec rm -rf {} +
   @find . -type d -name "sim_build" -exec rm -rf {} +
   @find . -type f -iname "*.vcd" -exec rm -rf {} +
+  @find . -type f -iname "*.xml" -exec rm -rf {} +
   @find . -type f -iname "*.log" -exec rm -rf {} +
   @find . -type f -iname "a.out" -exec rm -rf {} +

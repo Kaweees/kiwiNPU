@@ -28,7 +28,7 @@ def model_clamper(val: int) -> int:
 
 @cocotb.test()
 async def clamper_test(dut) -> None:
-    """Test Clamper module with random values."""
+    """Test Clamper module."""
 
     torch.manual_seed(42)
 
@@ -90,9 +90,10 @@ def test_clamper() -> None:
     runner.test(
         hdl_toplevel="Clamper",
         test_module="test_clamper",
-        test_dir=f"{proj_path}/tb",
+        test_dir=build_dir,
         build_dir=build_dir,
         waves=True,
+        extra_env={"PYTHONPATH": f"{proj_path}/tb"},
     )
 
 

@@ -6,6 +6,7 @@
 !.vscode/**/
 !assets/
 !assets/**/
+!.dockerignore
 !.editorconfig
 !.envrc
 !.gitattributes

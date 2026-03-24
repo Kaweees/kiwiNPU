@@ -17,7 +17,7 @@ MAX_VAL = (1 << (DATA_WIDTH - 1)) - 1
 
 @cocotb.test()
 async def relu_test(dut) -> None:
-    """Test ReLU module with random values."""
+    """Test ReLU module."""
 
     torch.manual_seed(42)
 
@@ -70,9 +70,10 @@ def test_relu() -> None:
     runner.test(
         hdl_toplevel="ReLU",
         test_module="test_relu",
-        test_dir=f"{proj_path}/tb",
+        test_dir=build_dir,
         build_dir=build_dir,
         waves=True,
+        extra_env={"PYTHONPATH": f"{proj_path}/tb"},
     )
 
 
