@@ -2,9 +2,10 @@
 name = "kiwi-npu"
 version = "0.1.0"
 description = "Add your description here"
+authors = [{ name = "Miguel Villa Floran", email = "miguel.villafloran@gmail.com" }]
+requires-python = ">=3.12,<3.13"
 readme = "README.md"
-requires-python = ">=3.12"
-# requires-python = ">=3.11,<3.13"
+license = { file = "LICENSE" }
 
 dependencies = [
   "cocotb>=2.0.1",
@@ -20,7 +21,11 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pre-commit"]
+dev = ["ipykernel", "ipywidgets", "pre-commit"]
+
+[tool.uv]
+index-strategy = "unsafe-best-match"
+prerelease = "allow"
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }

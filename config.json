@@ -56,8 +56,8 @@
   "LEFT_MARGIN_MULT": 6,
   "RIGHT_MARGIN_MULT": 6,
 
-  "//": "Absolute die size",
-  "FP_SIZING": "absolute",
+  "//": "Size the die from synthesized cell area and FP_CORE_UTIL",
+  "FP_SIZING": "relative",
 
   "GRT_ALLOW_CONGESTION": true,
 
@@ -70,7 +70,7 @@
   "RUN_CTS": true,
 
   "//": "Don't generate power rings",
-  "PDN_MULTILAYER": false,
+  "FP_PDN_MULTILAYER": false,
 
   "//": "MAGIC_DEF_LABELS may cause issues with LVS",
   "MAGIC_DEF_LABELS": false,

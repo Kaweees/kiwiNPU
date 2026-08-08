@@ -31,22 +31,23 @@
           name = "my-asic-project";
 
           packages = [
+            pkgs.python312
             ll.librelane
-            pkgs.python3
             pkgs.gnumake
             pkgs.just
             pkgs.verilator
             pkgs.iverilog
-            pkgs.verible
             pkgs.gtkwave
             pkgs.openfpgaloader
             pkgs.docker
             pkgs.xhost
             pkgs.git
-          ];
+          ]
+          ++ pkgs.lib.optional (!pkgs.stdenv.hostPlatform.isDarwin) pkgs.verible;
 
           shellHook = ''
             export TMPDIR=/tmp
+            unset PYTHONPATH
             export PDK_ROOT="''${PDK_ROOT:-$HOME/.ciel}"
             echo "LibreLane ready — PDK_ROOT=$PDK_ROOT"
           '';
